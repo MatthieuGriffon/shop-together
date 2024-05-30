@@ -1,3 +1,17 @@
+/* Tailwind CSS imports */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Full height for html and body */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Additional utility classes */
+.full-height {
+  height: 100%;
+}

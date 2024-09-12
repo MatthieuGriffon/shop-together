@@ -4,6 +4,26 @@ import FacebookProvider from "next-auth/providers/facebook";
 import User from "../../../models/User";
 
 const handler = NextAuth({
+
+  session: {
+    maxAge: 30 * 60, // La session expire après 30 minutes d'inactivité
+    updateAge: 5 * 60, // Le token est actualisé toutes les 5 minutes d'activité
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 60, 
+      },
+    },
+  },
+
+
+
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",

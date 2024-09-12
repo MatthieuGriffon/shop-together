@@ -16,7 +16,6 @@ declare global {
       };
     };
   }
-}
 
 interface FacebookAuthResponse {
   accessToken: string;
@@ -28,4 +27,5 @@ interface FacebookAuthResponse {
 interface FacebookLoginStatusResponse {
   status: 'connected' | 'not_authorized' | 'unknown';
   authResponse?: FacebookAuthResponse;
+}
 }

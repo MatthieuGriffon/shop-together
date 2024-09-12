@@ -1,15 +1,5 @@
 import { useEffect } from "react";
-interface FacebookAuthResponse {
-  accessToken: string;
-  expiresIn: number;
-  signedRequest: string;
-  userID: string;
-}
 
-interface FacebookLoginStatusResponse {
-  status: "connected" | "not_authorized" | "unknown";
-  authResponse?: FacebookAuthResponse;
-}
 const FacebookLoginStatus = () => {
   useEffect(() => {
     window.fbAsyncInit = function () {

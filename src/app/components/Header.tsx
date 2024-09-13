@@ -1,7 +1,7 @@
 "use client"; // Indique que c'est un Client Component
 
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FacebookLoginStatus from "./FacebookLoginStatus"; // Ton composant Facebook
 
 export default function Header() {
@@ -15,6 +15,13 @@ export default function Header() {
   const [success, setSuccess] = useState<boolean>(false);
 
   const loading = status === "loading";
+
+  useEffect(() => {
+    if (window.location.hash === "#_=_") {
+      // Remplace 'null' par une chaîne de caractères vide
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

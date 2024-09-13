@@ -1,7 +1,24 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../../../lib/sequelize";  // Connexion à PostgreSQL
+import { Model, DataTypes, Optional } from "sequelize";
+import { sequelize } from "../../../lib/sequelize"; // Connexion à PostgreSQL
 
-const Users = sequelize.define("Users", {
+// Interface pour typer les attributs d'utilisateur
+interface UserAttributes {
+  id: string;
+  email: string;
+  name?: string; // Rendre le nom optionnel
+  password?: string; // Le mot de passe est optionnel pour les utilisateurs OAuth
+  oauth_provider?: string;
+  oauth_id?: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+// Interface pour les attributs lors de la création
+// Le mot de passe est optionnel lors de la création
+interface UserCreationAttributes extends Optional<UserAttributes, "id" | "password" | "created_at" | "updated_at"> {}
+
+// Définition du modèle Sequelize
+const User = sequelize.define<Model<UserAttributes, UserCreationAttributes>>("User", {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -10,19 +27,25 @@ const Users = sequelize.define("Users", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   email: {
     type: DataTypes.STRING,
     unique: true,
     allowNull: false,
   },
+  
+  password: {
+    type: DataTypes.STRING,
+    allowNull: true, // Le mot de passe est facultatif pour les utilisateurs OAuth
+  },
   oauth_provider: {
     type: DataTypes.STRING,
-    allowNull: true,  // Stocke le fournisseur OAuth (Google, Facebook)
+    allowNull: true, // Peut être nul si l'utilisateur n'utilise pas OAuth
   },
   oauth_id: {
     type: DataTypes.STRING,
-    allowNull: true,  // Identifiant unique OAuth
+    allowNull: true, // Identifiant unique pour OAuth
   },
   created_at: {
     type: DataTypes.DATE,
@@ -31,19 +54,20 @@ const Users = sequelize.define("Users", {
   updated_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
-  }
+  },
 }, {
-  timestamps: true,  // Permet à Sequelize de gérer automatiquement createdAt et updatedAt
+  tableName: "Users", // Nom de la table
+  timestamps: true, // Gestion automatique des champs createdAt et updatedAt
   createdAt: "created_at",
   updatedAt: "updated_at",
-  freezeTableName: true,
+  freezeTableName: true, // Empêche Sequelize de pluraliser automatiquement le nom de la table
 
   // Hook avant chaque mise à jour
   hooks: {
     beforeUpdate: (user) => {
-      user.setDataValue('updated_at', new Date());  // Utilise setDataValue pour mettre à jour
+      user.setDataValue('updated_at', new Date()); // Met à jour le champ updated_at avant chaque mise à jour
     },
   }
 });
 
-export default Users;
+export default User;

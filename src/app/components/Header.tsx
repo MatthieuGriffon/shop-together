@@ -2,7 +2,8 @@
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import FacebookLoginStatus from "./FacebookLoginStatus"; // Ton composant Facebook
+import FacebookLoginStatus from "./FacebookLoginStatus";
+import Image from "next/image";
 
 export default function Header() {
   const [name, setName] = useState("");
@@ -60,20 +61,28 @@ export default function Header() {
   if (loading) {
     return <p className="text-center text-gray-500">Chargement...</p>;
   }
-
   return (
-    <header className="bg-gray-800 p-4 text-white">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Mon Application</h1>
-
-        {/* Bouton du menu mobile */}
+    <header className="bg-gray-900 p-5 text-white shadow-md">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <Image
+            src="/logo_shop-together.png"
+            width={60}
+            height={60}
+            style={{ objectFit: "contain", width: "auto", height: "auto" }}
+            alt="logo-shop-together"
+          />
+        </div>
+        <h1 className="text-2xl font-bold tracking-wide">Shop-Together</h1>
+        {/* Mobile menu button */}
         <button
-          className="block md:hidden"
+          className="md:hidden text-white focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Open Menu"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-8 w-8"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -87,60 +96,46 @@ export default function Header() {
           </svg>
         </button>
 
-        <nav className="hidden md:flex space-x-4">
+        {/* Desktop menu */}
+        <nav className="hidden md:flex space-x-6 items-center">
           {session ? (
             <button
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded shadow transition-all duration-300"
               onClick={() => signOut()}
             >
               Se déconnecter
             </button>
           ) : (
-            <>
+            <div className="space-x-4 flex items-center">
               {showLoginForm ? (
-                <div className="space-y-4">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium"
-                      >
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm font-medium"
-                      >
-                        Mot de passe
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
-                    {error && <p className="text-red-500">{error}</p>}
-                    <button
-                      type="submit"
-                      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                    >
-                      Connexion
-                    </button>
-                  </form>
-                  <p>
+                <form
+                  onSubmit={handleSignIn}
+                  className="space-y-4 w-full max-w-xs bg-gray-100 p-4 rounded-lg shadow-lg"
+                >
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Email"
+                    className="input-field"
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Mot de passe"
+                    className="input-field mt-2"
+                  />
+                  {error && <p className="text-red-500">{error}</p>}
+                  <button
+                    type="submit"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-3 transition-all duration-300"
+                  >
+                    Connexion
+                  </button>
+                  <p className="text-sm text-center">
                     Pas encore de compte ?{" "}
                     <button
                       className="text-blue-500 underline"
@@ -149,70 +144,49 @@ export default function Header() {
                       Inscrivez-vous
                     </button>
                   </p>
-                </div>
+                </form>
               ) : (
-                <div className="space-y-4">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium"
-                      >
-                        Nom d&apos;utilisateur
-                      </label>
-                      <input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium"
-                      >
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm font-medium"
-                      >
-                        Mot de passe
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
-                    {error && <p className="text-red-500">{error}</p>}
-                    {success && (
-                      <p className="text-green-500">
-                        Inscription réussie. Vous pouvez maintenant vous
-                        connecter.
-                      </p>
-                    )}
-                    <button
-                      type="submit"
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                    >
-                      Créer un compte
-                    </button>
-                  </form>
-                  <p>
+                <form
+                  onSubmit={handleSignUp}
+                  className="space-y-4 w-full max-w-xs bg-gray-100 p-4 rounded-lg shadow-lg"
+                >
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    placeholder="Nom d'utilisateur"
+                    className="input-field text-black"
+                  />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Email"
+                    className="input-field mt-2 text-black"
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Mot de passe"
+                    className="input-field mt-2 text-black"
+                  />
+                  {error && <p className="text-red-500">{error}</p>}
+                  {success && (
+                    <p className="text-green-500 text-center">
+                      Inscription réussie. Connectez-vous.
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-3 transition-all duration-300"
+                  >
+                    Créer un compte
+                  </button>
+                  <p className="text-sm text-center">
                     Vous avez déjà un compte ?{" "}
                     <button
                       className="text-blue-500 underline"
@@ -221,166 +195,145 @@ export default function Header() {
                       Connectez-vous
                     </button>
                   </p>
-                </div>
+                </form>
               )}
-
-              <div className="mt-4">
-                <button
-                  className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
-                  onClick={() => signIn("google")}
-                >
-                  Connexion Google
-                </button>
-
-                <button
-                  className="block w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded transition-colors duration-200 mt-2"
-                  onClick={() => signIn("facebook")}
-                >
-                  Connexion Facebook
-                </button>
-                <FacebookLoginStatus />
-              </div>
-            </>
+            </div>
           )}
+
+          {/* Google & Facebook buttons */}
+          <div className="flex space-x-3">
+            <button
+              onClick={() => signIn("google")}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-all duration-300"
+            >
+              Connexion Google
+            </button>
+            <button
+              onClick={() => signIn("facebook")}
+              className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-all duration-300"
+            >
+              Connexion Facebook
+            </button>
+            <FacebookLoginStatus />
+          </div>
         </nav>
       </div>
 
-      {/* Menu mobile (affiché quand le bouton est cliqué) */}
+      {/* Mobile menu */}
       {menuOpen && (
-        <nav className="mt-4 md:hidden">
+        <nav className="md:hidden mt-5 space-y-3 bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col h-[38vh]">
           {session ? (
             <button
-              className="block w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+              className="block w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-all duration-300"
               onClick={() => signOut()}
             >
               Se déconnecter
             </button>
           ) : (
             <>
-              {showLoginForm ? (
-                <div className="space-y-4">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium"
-                      >
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm font-medium"
-                      >
-                        Mot de passe
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
+              <div className="space-y-4 flex flex-row justify-center">
+                {showLoginForm ? (
+                  <form
+                    onSubmit={handleSignIn}
+                    className="space-y-4 w-full max-w-xs bg-black p-4 rounded-lg shadow-lg justify-center"
+                  >
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="Email"
+                      className="input-field text-black w-full"
+                    />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="Mot de passe"
+                      className="input-field mt-2 text-black w-full"
+                    />
                     {error && <p className="text-red-500">{error}</p>}
                     <button
                       type="submit"
-                      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-3 transition-all duration-300"
                     >
                       Connexion
                     </button>
+                    <p className="text-sm text-center">
+                      Pas encore de compte ?{" "}
+                      <button
+                        className="text-blue-500 underline"
+                        onClick={() => setShowLoginForm(false)}
+                      >
+                        Inscrivez-vous
+                      </button>
+                    </p>
                   </form>
-                  <p>
-                    Pas encore de compte ?{" "}
-                    <button
-                      className="text-blue-500 underline"
-                      onClick={() => setShowLoginForm(false)}
-                    >
-                      Inscrivez-vous
-                    </button>
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium"
-                      >
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm font-medium"
-                      >
-                        Mot de passe
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full p-2 mt-1 border border-gray-300 rounded"
-                      />
-                    </div>
+                ) : (
+                  <form
+                    onSubmit={handleSignUp}
+                    className="space-y-4 w-full max-w-xs bg-black  p-4 rounded-lg shadow-lg"
+                  >
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      placeholder="Nom d'utilisateur"
+                      className="input-field text-black w-full"
+                    />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="Email"
+                      className="input-field mt-2 text-black w-full"
+                    />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="Mot de passe"
+                      className="input-field mt-2 text-black w-full"
+                    />
                     {error && <p className="text-red-500">{error}</p>}
                     {success && (
-                      <p className="text-green-500">
-                        Inscription réussie. Vous pouvez maintenant vous
-                        connecter.
+                      <p className="text-green-500 text-center">
+                        Inscription réussie. Connectez-vous.
                       </p>
                     )}
                     <button
                       type="submit"
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-3 transition-all duration-300"
                     >
                       Créer un compte
                     </button>
+                    <p className="text-sm text-center">
+                      Vous avez déjà un compte ?{" "}
+                      <button
+                        className="text-blue-500 underline"
+                        onClick={() => setShowLoginForm(true)}
+                      >
+                        Connectez-vous
+                      </button>
+                    </p>
                   </form>
-                  <p>
-                    Vous avez déjà un compte ?{" "}
-                    <button
-                      className="text-blue-500 underline"
-                      onClick={() => setShowLoginForm(true)}
-                    >
-                      Connectez-vous
-                    </button>
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
 
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 <button
-                  className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+                  className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold  mt-2 py-2 px-4 rounded transition-all duration-300"
                   onClick={() => signIn("google")}
                 >
                   Connexion Google
                 </button>
 
                 <button
-                  className="block w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded mt-2"
+                  className="block w-full bg-blue-700 hover:bg-blue-800 text-white font-bold mt-2 py-2 px-4 rounded transition-all duration-300"
                   onClick={() => signIn("facebook")}
                 >
                   Connexion Facebook

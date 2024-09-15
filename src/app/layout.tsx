@@ -4,7 +4,8 @@ import "./globals.css";
 import ReduxProvider from "./components/ReduxProvider";
 import AuthProvider from "./components/AuthProviders";
 import SessionCleanup from "./features/SessionCleanup";
-import Header from "./components/Header"; // Import du Header
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 import MenuLink from "./components/MenuLink";
 
 const geistSans = localFont({
@@ -32,13 +33,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased  min-h-screen flex flex-col`}
       >
         <AuthProvider>
           <ReduxProvider>
             <Header />
             <MenuLink />
             {children}
+            <Footer />
             <SessionCleanup /> {/* Composant client pour gérer la session */}
           </ReduxProvider>
         </AuthProvider>

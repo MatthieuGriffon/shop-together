@@ -1,18 +1,21 @@
 "use client"; // Indique que c'est un Client Component
 
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { toggleMenu } from "../features/menuSlice"; // Import du toggleMenu de Redux
 import { useState, useEffect } from "react";
 import FacebookLoginStatus from "./FacebookLoginStatus";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 
 export default function Header() {
-  const [name, setName] = useState("");
+  const dispatch = useAppDispatch();
+  const menuOpen = useAppSelector((state) => state.menu.isOpen); // Utilisation de l'état global du menu
   const { data: session, status } = useSession();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(true); // Pour basculer entre connexion et inscription
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
 
@@ -20,7 +23,6 @@ export default function Header() {
 
   useEffect(() => {
     if (window.location.hash === "#_=_") {
-      // Remplace 'null' par une chaîne de caractères vide
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
@@ -34,9 +36,9 @@ export default function Header() {
     });
 
     if (result?.error) {
-      setError(result.error); // Affiche l'erreur si elle existe
+      setError(result.error);
     } else {
-      setError(null); // Reset de l'erreur
+      setError(null);
     }
   };
 
@@ -44,15 +46,13 @@ export default function Header() {
     e.preventDefault();
     const res = await fetch("/api/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
 
     if (res.ok) {
-      setSuccess(true); // Succès de l'inscription
-      setError(null); // Reset des erreurs
+      setSuccess(true);
+      setError(null);
     } else {
       const data = await res.json();
       setError(data.message || "Erreur lors de l'inscription");
@@ -62,6 +62,7 @@ export default function Header() {
   if (loading) {
     return <p className="text-center text-gray-500">Chargement...</p>;
   }
+
   return (
     <header className="bg-gray-900 p-5 text-white shadow-md">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -75,15 +76,16 @@ export default function Header() {
           />
         </div>
         <h1 className="text-2xl font-bold tracking-wide">Shop-Together</h1>
+
         {/* Mobile menu button */}
         <button
           className={`md:hidden text-white focus:outline-none transform transition-transform duration-300 ${
             menuOpen ? "rotate-90" : ""
           }`}
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => dispatch(toggleMenu())} // Utilisation du toggleMenu avec Redux
           aria-label="Open Menu"
         >
-          <Menu size={32} /> {/* Utilisation de l'icône de Lucide */}
+          <Menu size={32} />
         </button>
 
         {/* Desktop menu */}
@@ -225,7 +227,7 @@ export default function Header() {
                 {showLoginForm ? (
                   <form
                     onSubmit={handleSignIn}
-                    className="space-y-4 w-full max-w-xs bg-black p-4 rounded-lg shadow-lg justify-center"
+                    className="flex-col space-y-4 w-full max-w-xs bg-black p-4 rounded-lg shadow-lg justify-center"
                   >
                     <input
                       type="email"
@@ -263,7 +265,7 @@ export default function Header() {
                 ) : (
                   <form
                     onSubmit={handleSignUp}
-                    className="space-y-4 w-full max-w-xs bg-black  p-4 rounded-lg shadow-lg"
+                    className="space-y-4 w-full max-w-xs bg-black p-4 rounded-lg shadow-lg"
                   >
                     <input
                       type="text"
@@ -316,14 +318,14 @@ export default function Header() {
 
               <div className="mt-4 space-y-2">
                 <button
-                  className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold  mt-2 py-2 px-4 rounded transition-all duration-300"
+                  className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-all duration-300"
                   onClick={() => signIn("google")}
                 >
                   Connexion Google
                 </button>
 
                 <button
-                  className="block w-full bg-blue-700 hover:bg-blue-800 text-white font-bold mt-2 py-2 px-4 rounded transition-all duration-300"
+                  className="block w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition-all duration-300"
                   onClick={() => signIn("facebook")}
                 >
                   Connexion Facebook

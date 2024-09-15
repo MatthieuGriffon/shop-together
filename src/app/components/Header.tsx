@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import FacebookLoginStatus from "./FacebookLoginStatus";
 import Image from "next/image";
+import { Menu } from "lucide-react";
 
 export default function Header() {
   const [name, setName] = useState("");
@@ -76,24 +77,13 @@ export default function Header() {
         <h1 className="text-2xl font-bold tracking-wide">Shop-Together</h1>
         {/* Mobile menu button */}
         <button
-          className="md:hidden text-white focus:outline-none"
+          className={`md:hidden text-white focus:outline-none transform transition-transform duration-300 ${
+            menuOpen ? "rotate-90" : ""
+          }`}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Open Menu"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16m-7 6h7"
-            />
-          </svg>
+          <Menu size={32} /> {/* Utilisation de l'icône de Lucide */}
         </button>
 
         {/* Desktop menu */}
@@ -221,7 +211,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <nav className="md:hidden mt-5 space-y-3 bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col h-[38vh]">
+        <nav className="md:hidden mt-5 space-y-3 bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col  p-4 rounded-lg shadow-lg">
           {session ? (
             <button
               className="block w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-all duration-300"

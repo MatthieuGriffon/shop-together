@@ -4,6 +4,8 @@ import "./globals.css";
 import ReduxProvider from "./components/ReduxProvider";
 import AuthProvider from "./components/AuthProviders";
 import SessionCleanup from "./features/SessionCleanup";
+import Header from "./components/Header"; // Import du Header
+import MenuLink from "./components/MenuLink";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,6 +36,8 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ReduxProvider>
+            <Header />
+            <MenuLink />
             {children}
             <SessionCleanup /> {/* Composant client pour gérer la session */}
           </ReduxProvider>

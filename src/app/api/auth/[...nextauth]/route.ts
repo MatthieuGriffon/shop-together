@@ -19,6 +19,7 @@ const handler = NextAuth({
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 30 * 60,
+        updateAge: 5 * 60,
       },
     },
   },

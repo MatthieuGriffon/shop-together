@@ -2,7 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { toggleMenu } from "../features/menuSlice"; // Import du toggleMenu de Redux
+import { toggleMenu, closeMenu } from "../features/menuSlice"; // Import du toggleMenu de Redux
 import { useState, useEffect } from "react";
 import FacebookLoginStatus from "./FacebookLoginStatus";
 import Image from "next/image";
@@ -10,9 +10,9 @@ import { Menu } from "lucide-react";
 
 export default function Header() {
   const dispatch = useAppDispatch();
-  const menuOpen = useAppSelector((state) => state.menu.isOpen); // Utilisation de l'état global du menu
+  const menuOpen = useAppSelector((state) => state.menu.isOpen);
   const { data: session, status } = useSession();
-  const [showLoginForm, setShowLoginForm] = useState(true); // Pour basculer entre connexion et inscription
+  const [showLoginForm, setShowLoginForm] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -26,6 +26,13 @@ export default function Header() {
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
+
+  // Fermer le menu après la connexion
+  useEffect(() => {
+    if (status === "authenticated") {
+      dispatch(closeMenu());
+    }
+  }, [status, dispatch]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

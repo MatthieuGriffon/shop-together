@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    domains: ['lh3.googleusercontent.com', 'graph.facebook.com', 'graph.facebook.com', 'platform-lookaside.fbsbx.com'],  // Ajoute ce domaine pour les images Google
+  },
     webpack: (config, { isServer }) => {
       if (!isServer) {
         // Éviter d'inclure certains modules dans le bundle côté client

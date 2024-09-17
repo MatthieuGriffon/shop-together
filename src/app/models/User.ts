@@ -9,6 +9,7 @@ interface UserAttributes {
   password?: string; // Le mot de passe est optionnel pour les utilisateurs OAuth
   oauth_provider?: string;
   oauth_id?: string;
+  profile_picture_url?: string;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -47,6 +48,11 @@ const User = sequelize.define<Model<UserAttributes, UserCreationAttributes>>("Us
     type: DataTypes.STRING,
     allowNull: true, // Identifiant unique pour OAuth
   },
+  profile_picture_url: {
+    type: DataTypes.STRING, // Ajout du champ pour l'URL de la photo de profil
+    allowNull: true, // Peut être nul si l'utilisateur n'a pas uploadé de photo
+  },
+  
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

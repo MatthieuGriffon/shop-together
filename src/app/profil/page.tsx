@@ -6,6 +6,8 @@ import { useAppDispatch } from "../store/hooks";
 import { openMenu } from "../features/menuSlice";
 import Image from "next/image";
 import defaultProfilePic from "/public/images/default-profile.png";
+import ChangePassword from "../components/ChangePassword";
+import DeleteAccount from "../components/DeleteAccount";
 
 interface UserDataWithProfilePicture {
   id: string;
@@ -120,6 +122,8 @@ const ProfilPage = ({
     userData?.profilePictureUrl ||
     defaultProfilePic.src;
 
+  const isCredentialUser = session?.user?.provider === "credentials";
+
   return (
     <div className="p-2 max-w-xs mx-auto">
       <h1 className="text-xl font-semibold text-center mb-2">
@@ -195,6 +199,14 @@ const ProfilPage = ({
           {new Date(userData.updated_at).toLocaleTimeString()}
         </p>
       )}
+      {isCredentialUser && (
+        <div className="mt-6">
+          <ChangePassword />
+        </div>
+      )}
+      <div className="mt-6">
+        <DeleteAccount />
+      </div>
     </div>
   );
 };

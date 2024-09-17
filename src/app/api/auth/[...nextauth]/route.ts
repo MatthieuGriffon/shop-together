@@ -1,5 +1,18 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      profile_picture_url?: string;
+      provider?: string;
+    } & DefaultSession["user"];
+  }
+}
+
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -29,11 +42,14 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         const user = await User.findOne({ where: { email: credentials?.email } });
         if (!user) throw new Error("No user found with that email");
+
         const userPassword = user.get('password') as string;
         const userId = user.get('id') as string;
         const userEmail = user.get('email') as string;
         const valid = await bcrypt.compare(credentials?.password || "", userPassword);
         if (!valid) throw new Error("Invalid credentials");
+
+        // Retourne les données utilisateur essentielles pour la session
         return { id: userId, email: userEmail };
       },
     }),
@@ -41,25 +57,33 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      // Si l'utilisateur vient de s'authentifier
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
-        token.profile_picture_url = user.profile_picture_url;  // Ajout de profile_picture_url
+        token.profile_picture_url = user.profile_picture_url || null; // Ajoute la photo de profil si elle existe
       }
-      return token;
+  
+      // Assigne le provider lors de l'authentification via OAuth ou credentials
+      if (account) {
+        token.provider = account.provider || "credentials";
+      }
+  
+      return token; // Retourne le token JWT modifié
     },
-    
+  
     async session({ session, token }) {
-      session.user.id = token.id as string; 
+      // Transfert des propriétés du JWT vers la session
+      session.user.id = token.id as string;
       session.user.email = token.email as string;
       session.user.name = token.name as string;
-      session.user.profile_picture_url = token.profile_picture_url as string; // Ajout de profile_picture_url
-      return session;
-    }
-
-   
+      session.user.profile_picture_url = token.profile_picture_url as string | undefined; // Gérer les valeurs nulles
+      session.user.provider = token.provider as string || "credentials"; // Assigne le provider avec "credentials" par défaut
+  
+      return session; // Retourne la session avec les nouvelles valeurs
+    },
   }
 };
 

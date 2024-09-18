@@ -8,6 +8,7 @@ import Image from "next/image";
 import defaultProfilePic from "/public/images/default-profile.png";
 import ChangePassword from "../components/ChangePassword";
 import DeleteAccount from "../components/DeleteAccount";
+import UserGroups from "../components/UserGroups";
 
 interface UserDataWithProfilePicture {
   id: string;
@@ -206,6 +207,9 @@ const ProfilPage = ({
       )}
       <div className="mt-6">
         <DeleteAccount />
+      </div>
+      <div className="mt-6">
+        <UserGroups userId={session?.user?.id || ""} />
       </div>
     </div>
   );

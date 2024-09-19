@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import GroupMembers from '../../models/GroupMember';
-import User from '../../models/User';
-import Group from '../../models/Group';
+import { GroupMembers, Group, User } from '../../models/associations';
+
 
 // Interface pour les éléments récupérés
 interface GroupMemberWithGroup extends GroupMembers {
@@ -9,6 +8,9 @@ interface GroupMemberWithGroup extends GroupMembers {
     id: string;
     name: string;
     created_by: string;
+    creator: {
+      name: string; // Le nom du créateur
+    };
   };
 }
 
@@ -23,26 +25,30 @@ export async function GET(req: Request) {
 
     let actualUserId = userId;
 
-    // Vérifier si c'est un utilisateur avec OAuth
-    const user = await User.findOne({
+    // Vérifier si c'est un utilisateur OAuth
+    const oauthUser = await User.findOne({
       where: { oauth_id: userId }
     });
 
-    if (user) {
-      // Si l'utilisateur OAuth est trouvé, on utilise son UUID
-      actualUserId = user.get('id') as string;
+    if (oauthUser) {
+      actualUserId = oauthUser.get('id') as string;
     } else if (!validateUUID(userId)) {
-      // Si ce n'est pas un UUID valide et aucun utilisateur OAuth n'est trouvé
       return NextResponse.json({ error: 'Utilisateur non trouvé ou ID invalide' }, { status: 404 });
     }
 
-    // Récupérer tous les groupes auxquels l'utilisateur appartient avec l'UUID
     const userGroups = await GroupMembers.findAll({
-      where: { user_id: actualUserId }, // Utiliser l'UUID ici
+      where: { user_id: actualUserId },
       include: [
         {
           model: Group,
           attributes: ['id', 'name', 'created_by'],
+          include: [
+            {
+              model: User,
+              as: 'creator', // Utiliser l'alias 'creator'
+              attributes: ['name'], // Obtenir uniquement le nom du créateur
+            },
+          ],
         },
       ],
     }) as GroupMemberWithGroup[];
@@ -55,7 +61,7 @@ export async function GET(req: Request) {
     const groups = userGroups.map((groupMember: GroupMemberWithGroup) => ({
       group_id: groupMember.Group.id,
       group_name: groupMember.Group.name,
-      created_by: groupMember.Group.created_by,
+      created_by: groupMember.Group.creator?.name || 'Inconnu', // Vérification de la nullité
       role: groupMember.role,
     }));
 

@@ -35,7 +35,6 @@ const User = sequelize.define<Model<UserAttributes, UserCreationAttributes>>("Us
     unique: true,
     allowNull: false,
   },
-  
   password: {
     type: DataTypes.STRING,
     allowNull: true, // Le mot de passe est facultatif pour les utilisateurs OAuth
@@ -52,7 +51,6 @@ const User = sequelize.define<Model<UserAttributes, UserCreationAttributes>>("Us
     type: DataTypes.STRING, // Ajout du champ pour l'URL de la photo de profil
     allowNull: true, // Peut être nul si l'utilisateur n'a pas uploadé de photo
   },
-  
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

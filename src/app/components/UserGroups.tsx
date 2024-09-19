@@ -61,7 +61,8 @@ export default function UserGroups({ userId }: { userId: string }) {
                     {group.group_name}
                   </div>
                   <div className="text-sm text-gray-600">
-                    Rôle : {group.role === "admin" ? "Créateur" : "Membre"}
+                    Rôle :{" "}
+                    {group.role === "admin" ? "Administrateur" : "Membre"}
                   </div>
                   <div className="text-xs text-gray-500">
                     {group.role === "admin"

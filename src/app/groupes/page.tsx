@@ -2,8 +2,9 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { useAppDispatch } from "../store/hooks"; // Assurez-vous d'importer l'action dispatch
-import { openMenu } from "../features/menuSlice"; // Import de l'action pour ouvrir le menu
+import { useAppDispatch } from "../store/hooks";
+import { openMenu } from "../features/menuSlice";
+import CreateGroupModal from "../components/CreateGroupModal";
 
 interface Group {
   group_id: string;
@@ -18,11 +19,11 @@ export default function GroupesPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
 
-  // Vérifier l'état de l'utilisateur et ouvrir le menu si non authentifié
   useEffect(() => {
     if (status === "unauthenticated") {
-      dispatch(openMenu()); // Ouvre le menu de connexion si l'utilisateur n'est pas connecté
+      dispatch(openMenu());
     }
   }, [status, dispatch]);
 
@@ -64,9 +65,69 @@ export default function GroupesPage() {
     };
 
     if (status === "authenticated") {
-      fetchGroups(); // Appeler l'API lorsque l'utilisateur est authentifié
+      fetchGroups();
     }
   }, [status, session?.user?.id]);
+
+  const handleCreateGroup = async (groupName: string) => {
+    try {
+      const res = await fetch("/api/groups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: groupName,
+          createdBy: session?.user?.id, // L'ID de l'utilisateur connecté
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur lors de la création du groupe.");
+      }
+
+      // Appeler à nouveau l'API pour obtenir la liste mise à jour des groupes
+      fetchGroups(); // Fonction qui rafraîchit la liste des groupes depuis l'API
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Fonction existante qui appelle l'API pour récupérer les groupes
+  const fetchGroups = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const userId = session?.user?.id;
+      if (!userId) {
+        setError("Impossible de récupérer l'ID utilisateur.");
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`/api/groupMembers?userId=${userId}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.error || "Erreur lors de la récupération des groupes"
+        );
+      }
+
+      if (data.message === "Aucun groupe trouvé") {
+        setGroups([]);
+      } else {
+        setGroups(data); // Met à jour la liste des groupes
+      }
+    } catch (error) {
+      setError(
+        (error as Error).message || "Erreur lors de la récupération des groupes"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (status === "loading") {
     return <p className="text-center text-gray-500">Chargement...</p>;
@@ -88,20 +149,20 @@ export default function GroupesPage() {
     <div className="container mx-auto p-5">
       <h1 className="text-3xl font-bold mb-4">Gestion des groupes</h1>
       <p>Créez, rejoignez ou gérez vos groupes ici.</p>
-
       {/* Gestion du chargement et des erreurs */}
       {loading && (
         <p className="text-center text-gray-500">Chargement des groupes...</p>
       )}
       {error && <p className="text-center text-red-500">{error}</p>}
-
       {/* Section pour la création de groupe */}
       <div className="mt-6">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded">
+        <button
+          onClick={() => setShowModal(true)} // Ouvrir la modal
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
           Créer un nouveau groupe
         </button>
       </div>
-
       {/* Section pour rejoindre un groupe */}
       <div className="mt-6">
         <h2 className="text-2xl font-semibold mb-2">Rejoindre un groupe</h2>
@@ -114,7 +175,7 @@ export default function GroupesPage() {
           Rejoindre
         </button>
       </div>
-
+      {/* Liste des groupes */}{" "}
       {/* Section pour afficher la liste des groupes de l'utilisateur */}
       <div className="mt-6">
         <h2 className="text-2xl font-semibold mb-2">Mes groupes</h2>
@@ -122,17 +183,18 @@ export default function GroupesPage() {
           <ul className="space-y-4">
             {groups.map((group) => (
               <li
-                key={group.group_id}
+                key={group.group_id} // Ajout de la clé ici
                 className="bg-gray-100 p-4 rounded-lg shadow-md"
               >
-                <h3 className="text-lg font-bold">{group.group_name}</h3>
-                <p>
+                <h3 className="text-lg font-bold text-black">
+                  {group.group_name}
+                </h3>
+                <p className="text-black">
                   Rôle: {group.role === "admin" ? "Administrateur" : "Membre"}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-black">
                   Créé par : {group.created_by}
-                </p>{" "}
-                {/* Affichage du nom du créateur */}
+                </p>
                 <div className="mt-2 flex space-x-4">
                   <button className="bg-blue-500 text-white px-4 py-2 rounded">
                     Gérer les membres
@@ -150,6 +212,13 @@ export default function GroupesPage() {
           )
         )}
       </div>
+      {/* Modal de création de groupe */}
+      {showModal && (
+        <CreateGroupModal
+          onClose={() => setShowModal(false)} // Fermer la modal
+          onSubmit={handleCreateGroup} // Fonction pour soumettre le formulaire
+        />
+      )}
     </div>
   );
 }

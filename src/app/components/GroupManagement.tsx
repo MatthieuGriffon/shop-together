@@ -27,6 +27,7 @@ export default function GroupManagementModal({
   const [loading, setLoading] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false); // Ajout de l'état pour vérifier si l'utilisateur est admin
 
   useEffect(() => {
     const fetchGroupMembers = async () => {
@@ -41,6 +42,14 @@ export default function GroupManagementModal({
           );
         }
         setMembers(data);
+
+        // Vérifier si l'utilisateur connecté est un admin du groupe
+        const userInGroup = data.find(
+          (member: Member) => member.User.id === session?.user?.id
+        );
+        if (userInGroup?.role === "admin") {
+          setIsAdmin(true);
+        }
       } catch (error) {
         setError((error as Error).message);
       } finally {
@@ -48,8 +57,10 @@ export default function GroupManagementModal({
       }
     };
 
-    fetchGroupMembers();
-  }, [groupId]);
+    if (session?.user?.id) {
+      fetchGroupMembers();
+    }
+  }, [groupId, session?.user?.id]);
 
   const generateInviteLink = async () => {
     try {
@@ -76,6 +87,7 @@ export default function GroupManagementModal({
       setError((error as Error).message);
     }
   };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
@@ -103,28 +115,37 @@ export default function GroupManagementModal({
           ))}
         </ul>
 
-        {/* Générer un lien d'invitation */}
-        <button onClick={generateInviteLink} className="bg-blue-500 text-white">
-          Générer un lien d&apos;invitation
-        </button>
-
-        {/* Affichage du lien */}
-        {inviteLink && (
-          <div className="mt-4">
-            <p>Invitez quelqu&apos;un en partageant ce lien :</p>
-            <input
-              type="text"
-              value={inviteLink}
-              readOnly
-              className="border p-2 w-full"
-            />
+        {/* Afficher le bouton de génération du lien uniquement si l'utilisateur est admin */}
+        {isAdmin && (
+          <>
             <button
-              onClick={() => navigator.clipboard.writeText(inviteLink)}
-              className="bg-gray-500 text-white mt-2"
+              onClick={generateInviteLink}
+              className="bg-blue-500 text-white"
             >
-              Copier le lien
+              Générer un lien d&apos;invitation
             </button>
-          </div>
+
+            {/* Affichage du lien */}
+            {inviteLink && (
+              <div className="mt-4">
+                <p className="text-black">
+                  Invitez quelqu&apos;un en partageant ce lien :
+                </p>
+                <input
+                  type="text"
+                  value={inviteLink}
+                  readOnly
+                  className="border p-2 w-full text-black"
+                />
+                <button
+                  onClick={() => navigator.clipboard.writeText(inviteLink)}
+                  className="bg-gray-500 text-white mt-2"
+                >
+                  Copier le lien
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Gestion des erreurs */}

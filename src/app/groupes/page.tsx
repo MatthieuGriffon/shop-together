@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { openMenu } from "../features/menuSlice";
 import CreateGroupModal from "../components/CreateGroupModal";
+import GroupManagementModal from "../components/GroupManagement";
 
 interface Group {
   group_id: string;
@@ -20,6 +21,12 @@ export default function GroupesPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [showGroupManagement, setShowGroupManagement] =
+    useState<boolean>(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupName, setSelectedGroupName] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -196,7 +203,14 @@ export default function GroupesPage() {
                   Créé par : {group.created_by}
                 </p>
                 <div className="mt-2 flex space-x-4">
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded">
+                  <button
+                    onClick={() => {
+                      setSelectedGroupName(group.group_name);
+                      setSelectedGroupId(group.group_id);
+                      setShowGroupManagement(true);
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                  >
                     Gérer les membres
                   </button>
                   <button className="bg-red-500 text-white px-4 py-2 rounded">
@@ -217,6 +231,13 @@ export default function GroupesPage() {
         <CreateGroupModal
           onClose={() => setShowModal(false)} // Fermer la modal
           onSubmit={handleCreateGroup} // Fonction pour soumettre le formulaire
+        />
+      )}
+      {showGroupManagement && selectedGroupId && (
+        <GroupManagementModal
+          groupId={selectedGroupId}
+          groupName={selectedGroupName || ""}
+          onClose={() => setShowGroupManagement(false)}
         />
       )}
     </div>

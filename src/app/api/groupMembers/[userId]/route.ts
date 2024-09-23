@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GroupMembers, Group, User } from '../../models/associations';
-
+import { GroupMembers, Group, User } from '../../../models/associations';
 
 // Interface pour les éléments récupérés
 interface GroupMemberWithGroup extends GroupMembers {
@@ -14,20 +13,18 @@ interface GroupMemberWithGroup extends GroupMembers {
   };
 }
 
-export async function GET(req: Request) {
+export async function GET(
+  req: Request,
+  { params }: { params: { userId: string } } // On récupère les paramètres dynamiques ici
+) {
   try {
-    const url = new URL(req.url);
-    const userId = url.searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'userId est requis' }, { status: 400 });
-    }
+    const { userId } = params;
 
     let actualUserId = userId;
 
     // Vérifier si c'est un utilisateur OAuth
     const oauthUser = await User.findOne({
-      where: { oauth_id: userId }
+      where: { oauth_id: userId },
     });
 
     if (oauthUser) {

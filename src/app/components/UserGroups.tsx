@@ -19,7 +19,8 @@ export default function UserGroups({ userId }: { userId: string }) {
       setError("");
 
       try {
-        const res = await fetch(`/api/groupMembers?userId=${userId}`);
+        // Utiliser la route dynamique avec userId directement dans l'URL
+        const res = await fetch(`/api/groupMembers/${userId}`);
         if (res.ok) {
           const data: Group[] = await res.json();
           setGroups(data);

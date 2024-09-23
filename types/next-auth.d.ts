@@ -14,7 +14,8 @@ declare module "next-auth" {
       email: string;
       profile_picture_url?: string; // Photo de profil personnalisée
       image?: string | null; // Image provenant des fournisseurs OAuth
-      updated_at?: string; // Date de mise à jour
+      updated_at?: string;
+      provider?: string;  // Date de mise à jour
     } & DefaultSession["user"]; // Garde les autres propriétés (email, name, etc.)
   }
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import User from "../../../models/User"; // Chemin correct vers ton modèle User
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Importation des options d'auth
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions" // Importation des options d'auth
 
 export async function POST(req: NextRequest) {
     // Créer un objet "request" et "response" attendu par getServerSession

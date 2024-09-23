@@ -34,13 +34,16 @@ export default function GroupManagementModal({
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/groupManagement?groupId=${groupId}`);
+        // Utiliser le paramètre groupId directement dans l'URL dynamique
+        const res = await fetch(`/api/groupManagement/${groupId}`);
         const data = await res.json();
+
         if (!res.ok) {
           throw new Error(
             data.error || "Erreur lors de la récupération des membres."
           );
         }
+
         setMembers(data);
 
         // Vérifier si l'utilisateur connecté est un admin du groupe

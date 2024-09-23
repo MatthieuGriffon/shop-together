@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions"
 import User from "../../../models/User"; // Assure-toi que le chemin est correct
 
 export async function DELETE(req: NextRequest) {

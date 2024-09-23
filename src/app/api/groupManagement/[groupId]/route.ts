@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
-import { GroupMembers, User } from '../../models/associations';
+import { GroupMembers, User } from '../../../models/associations';
 
-export async function GET(req: Request) {
+interface Params {
+  groupId: string;
+}
+
+export async function GET(req: Request, { params }: { params: Params }) {
   try {
-    const url = new URL(req.url);
-    const groupId = url.searchParams.get('groupId');
+    const { groupId } = params;
 
     if (!groupId) {
       return NextResponse.json({ error: 'groupId est requis' }, { status: 400 });

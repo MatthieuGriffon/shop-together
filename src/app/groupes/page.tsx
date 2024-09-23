@@ -47,7 +47,8 @@ export default function GroupesPage() {
           return;
         }
 
-        const res = await fetch(`/api/groupMembers?userId=${userId}`);
+        // Utilisation de la route dynamique au lieu du paramètre de requête
+        const res = await fetch(`/api/groupMembers/${userId}`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -113,7 +114,8 @@ export default function GroupesPage() {
         return;
       }
 
-      const res = await fetch(`/api/groupMembers?userId=${userId}`);
+      // Utilisation de la route dynamique
+      const res = await fetch(`/api/groupMembers/${userId}`);
       const data = await res.json();
 
       if (!res.ok) {

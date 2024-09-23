@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  swcMinify : false,
   images: {
     domains: ['lh3.googleusercontent.com', 'graph.facebook.com', 'graph.facebook.com', 'platform-lookaside.fbsbx.com'],  // Ajoute ce domaine pour les images Google
   },

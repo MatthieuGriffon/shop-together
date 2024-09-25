@@ -17,5 +17,5 @@ export const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: "postgres",
   dialectModule: pg,
   protocol: "postgres",
-  logging: false, // Désactiver les logs SQL pour plus de clarté
+  logging:  console.log, // Désactiver les logs SQL pour plus de clarté
 });

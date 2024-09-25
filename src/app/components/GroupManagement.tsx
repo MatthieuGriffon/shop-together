@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 interface Member {
+  createdAt: string | number | Date;
   User: {
+    joined_at: string | number | Date;
     id: string;
     name: string;
     email: string;
   };
   role: string;
-  joined_at: string;
 }
 
 export default function GroupManagementModal({
@@ -100,7 +101,6 @@ export default function GroupManagementModal({
 
         {loading && <p>Chargement...</p>}
         {error && <p className="text-red-500">{error}</p>}
-
         <ul className="space-y-4">
           {members.map((member) => (
             <li
@@ -110,9 +110,10 @@ export default function GroupManagementModal({
               <p className="font-bold text-black">{member.User.name}</p>
               <p>{member.User.email}</p>
               <p className="text-sm text-black">Rôle : {member.role}</p>
+
               <p className="text-xs text-black">
                 Membre depuis :{" "}
-                {new Date(member.joined_at).toLocaleDateString()}
+                {new Date(member.createdAt).toLocaleDateString()}
               </p>
             </li>
           ))}

@@ -1,70 +1,45 @@
-import { DataTypes, Model, Association } from 'sequelize';
+import { Model, DataTypes, BelongsToGetAssociationMixin } from 'sequelize';
 import { sequelize } from '../../../lib/sequelize';
 import Group from './Group';
-import User from './User';
+import User from './User'; // Importer User en tant que valeur
 
-interface GroupMemberAttributes {
-  id: string;
-  group_id: string;
-  user_id: string;
-  role: string;
-  joined_at: Date;
-}
-
-class GroupMembers extends Model<GroupMemberAttributes> implements GroupMemberAttributes {
-  public id!: string;
-  public group_id!: string;
+// Utiliser typeof pour extraire le type du modèle User
+class GroupMembers extends Model {
   public user_id!: string;
+  public group_id!: string;
   public role!: string;
-  public joined_at!: Date;
 
-  // Associer un groupe à chaque membre du groupe
-  public static associations: {
-    group: Association<GroupMembers, Group>;
-  };
+  // Association mixin
+  public getGroup!: BelongsToGetAssociationMixin<Group>;
+  public getUser!: BelongsToGetAssociationMixin<typeof User>;
+
+  // Ajoute la propriété Group et User pour accéder aux données
+  public Group?: Group;
+  public User?: typeof User;
 }
 
-GroupMembers.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    group_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: Group,
-        key: 'id',
-      },
-    },
-    user_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    joined_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
+GroupMembers.init({
+  user_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
   },
-  {
-    sequelize,
-    modelName: 'GroupMembers',
-    tableName: 'GroupMembers',
-    timestamps: true,
-  }
-);
+  group_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, {
+  sequelize,
+  modelName: 'GroupMembers',
+  tableName: 'GroupMembers', // Correspond à la table SQL
+  timestamps: true,
+});
 
-// Associer GroupMembers à Group
-GroupMembers.belongsTo(Group, { foreignKey: 'group_id' });
+// Associations
+GroupMembers.belongsTo(Group, { foreignKey: 'group_id', as: 'Group' });
+GroupMembers.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
 
 export default GroupMembers;

@@ -1,76 +1,59 @@
 import { NextResponse } from 'next/server';
-import { GroupMembers, Group, User } from '../../../models/associations';
+import GroupMembers from '../../../models/GroupMember';
+import Group from '../../../models/Group';
+import User from '../../../models/User'; // Importer le modèle User pour l'utilisateur créateur
 
-// Interface pour les éléments récupérés
-interface GroupMemberWithGroup extends GroupMembers {
-  Group: {
-    id: string;
-    name: string;
-    created_by: string;
-    creator: {
-      name: string; // Le nom du créateur
-    };
-  };
-}
-
-export async function GET(
-  req: Request,
-  { params }: { params: { userId: string } } // On récupère les paramètres dynamiques ici
-) {
+// Récupérer les groupes d'un utilisateur donné
+export async function GET(req: Request, { params }: { params: { userId: string } }) {
   try {
     const { userId } = params;
 
-    let actualUserId = userId;
-
-    // Vérifier si c'est un utilisateur OAuth
-    const oauthUser = await User.findOne({
-      where: { oauth_id: userId },
-    });
-
-    if (oauthUser) {
-      actualUserId = oauthUser.get('id') as string;
-    } else if (!validateUUID(userId)) {
-      return NextResponse.json({ error: 'Utilisateur non trouvé ou ID invalide' }, { status: 404 });
-    }
-
-    const userGroups = await GroupMembers.findAll({
-      where: { user_id: actualUserId },
+    // Récupérer les GroupMembers pour cet utilisateur
+    const userGroups = await GroupMembers.findAll({ 
+      where: { user_id: userId },
       include: [
         {
           model: Group,
-          attributes: ['id', 'name', 'created_by'],
+          as: 'Group', // Assure-toi que l'alias est correct dans tes associations
           include: [
             {
-              model: User,
-              as: 'creator', // Utiliser l'alias 'creator'
-              attributes: ['name'], // Obtenir uniquement le nom du créateur
+              model: User, // Inclure l'utilisateur qui a créé le groupe
+              as: 'creator', // Assure-toi d'utiliser le bon alias pour le créateur
+              attributes: ['id', 'name'], // Récupérer uniquement les informations nécessaires
             },
           ],
         },
       ],
-    }) as GroupMemberWithGroup[];
+    });
 
     if (!userGroups.length) {
       return NextResponse.json({ message: 'Aucun groupe trouvé' }, { status: 200 });
     }
 
-    // Structurer les données pour la réponse
-    const groups = userGroups.map((groupMember: GroupMemberWithGroup) => ({
-      group_id: groupMember.Group.id,
-      group_name: groupMember.Group.name,
-      created_by: groupMember.Group.creator?.name || 'Inconnu', // Vérification de la nullité
-      role: groupMember.role,
-    }));
+    // Structurer les groupes avec le créateur
+    const groups = userGroups.map((groupMember) => {
+      const group = groupMember.Group;
+      const creator = group?.creator;
+
+      if (!group) {
+        throw new Error(`Le groupe avec l'id ${groupMember.group_id} n'existe pas`);
+      }
+      
+      if (!creator) {
+        throw new Error(`Le créateur du groupe avec l'id ${group.id} n'a pas été trouvé`);
+      }
+      
+      return {
+        group_id: group.id,
+        group_name: group.name,
+        role: groupMember.role,
+        created_by: creator.name,
+      };
+    });
 
     return NextResponse.json(groups, { status: 200 });
   } catch (error) {
     console.error('Erreur lors de la récupération des groupes:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
-}
-
-// Fonction utilitaire pour valider un UUID
-function validateUUID(id: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(id);
 }

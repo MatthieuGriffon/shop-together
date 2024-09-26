@@ -15,7 +15,6 @@ interface LeaveGroupModalProps {
   onConfirm: (newAdminId?: string) => void; // Passe un nouvel admin si nécessaire
   onCancel: () => void;
 }
-
 export default function LeaveGroupModal({
   groupName,
   isAdmin,
@@ -23,23 +22,22 @@ export default function LeaveGroupModal({
   onConfirm,
   onCancel,
 }: LeaveGroupModalProps) {
-  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null); // Stocke le nouvel admin
+  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
 
   const handleSelectAdmin = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAdminId(event.target.value);
   };
 
   const handleConfirm = () => {
-    console.log(
-      "Confirmation du départ du groupe. Admin sélectionné:",
-      selectedAdminId
-    );
     if (isAdmin && !selectedAdminId) {
       alert("Please select a new admin before leaving the group.");
       return;
     }
-    onConfirm(selectedAdminId || undefined); // Si pas d'admin nécessaire, on passe undefined
+    // Appeler la fonction onConfirm avec le nouvel admin sélectionné
+    onConfirm(selectedAdminId || undefined);
   };
+
+  const otherMembers = members.filter((member) => member.role !== "admin");
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
@@ -53,29 +51,25 @@ export default function LeaveGroupModal({
             : `Êtes-vous sûr de vouloir quitter le groupe ${groupName}?`}
         </p>
 
-        {/* Si l'utilisateur est admin, on affiche la liste des membres */}
-        {isAdmin && (
+        {isAdmin && otherMembers.length > 0 && (
           <div className="mb-4">
             <label className="block text-sm font-medium text-black mb-2">
               Sélectionner un nouveau responsable
             </label>
             <select
               onChange={handleSelectAdmin}
-              className="block w-full border rounded-lg p-2"
+              className="block w-full border rounded-lg p-2 text-black"
             >
               <option value="">Choisir un membre</option>
-              {members
-                .filter((member) => member.role !== "admin") // Exclure l'utilisateur actuel
-                .map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
+              {otherMembers.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
             </select>
           </div>
         )}
 
-        {/* Boutons de confirmation et d'annulation */}
         <div className="flex justify-end space-x-4">
           <button
             onClick={onCancel}

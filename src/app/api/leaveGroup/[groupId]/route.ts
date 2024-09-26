@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
-
 import GroupMembers from '@/app/models/GroupMember';
 import Group from '@/app/models/Group';
+import { Op } from 'sequelize';
 
 // Gestion de la requête POST pour quitter le groupe
 export async function POST(req: Request, { params }: { params: { groupId: string } }) {
   const { groupId } = params;
   let userId;
-  console.log('groupId dans le leaveGroup/[groupId]/route.ts:', groupId);
 
   try {
     const body = await req.json();
-    userId = body.userId; // Récupérer l'ID utilisateur depuis le body
+    userId = body.userId;
+    const newAdminId = body.newAdminId; // L'ID du nouvel administrateur
 
     if (!groupId || !userId) {
-      console.error('ID de groupe ou utilisateur manquant');
       return NextResponse.json({ error: 'ID de groupe ou utilisateur manquant' }, { status: 400 });
     }
 
@@ -27,7 +26,6 @@ export async function POST(req: Request, { params }: { params: { groupId: string
     });
 
     if (!userMembership) {
-      console.error("Utilisateur non trouvé dans le groupe ou groupe inexistant");
       return NextResponse.json({ error: "Vous n'êtes pas membre de ce groupe ou le groupe n'existe pas" }, { status: 404 });
     }
 
@@ -38,24 +36,42 @@ export async function POST(req: Request, { params }: { params: { groupId: string
       const otherMembers = await GroupMembers.findAll({
         where: {
           group_id: groupId,
-          user_id: { $ne: userId }, // Exclure l'admin actuel
+          user_id: { [Op.ne]: userId }, // Exclure l'utilisateur actuel
         },
       });
 
       if (otherMembers.length === 0) {
         // Si aucun autre membre, supprimer le groupe
+        await GroupMembers.destroy({
+          where: { group_id: groupId },
+        });
+
         await Group.destroy({
           where: { id: groupId },
         });
 
-        console.log('Groupe supprimé car aucun autre membre');
         return NextResponse.json({ message: 'Le groupe a été supprimé car vous étiez le dernier membre.' }, { status: 200 });
       }
 
-      // Retourner la liste des autres membres pour que l'admin puisse choisir un successeur
+      // Si un nouvel administrateur est défini
+      if (newAdminId) {
+        // Mettre à jour le rôle de l'utilisateur sélectionné en tant qu'administrateur
+        await GroupMembers.update(
+          { role: 'admin' },
+          { where: { user_id: newAdminId, group_id: groupId } }
+        );
+      }
+
+      // Supprimer l'utilisateur actuel du groupe après le transfert du rôle d'admin
+      await GroupMembers.destroy({
+        where: {
+          group_id: groupId,
+          user_id: userId,
+        },
+      });
+
       return NextResponse.json({
-        message: 'Vous êtes administrateur. Sélectionnez un nouveau admin.',
-        members: otherMembers,
+        message: 'Vous avez transféré l\'administration et quitté le groupe avec succès.',
       }, { status: 200 });
     }
 
@@ -68,7 +84,6 @@ export async function POST(req: Request, { params }: { params: { groupId: string
     });
 
     if (result === 0) {
-      console.error("Utilisateur non trouvé dans le groupe ou groupe inexistant");
       return NextResponse.json({ error: "Vous n'êtes pas membre de ce groupe ou le groupe n'existe pas" }, { status: 404 });
     }
 

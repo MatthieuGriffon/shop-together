@@ -131,6 +131,7 @@ export default function GroupesPage() {
   };
 
   const handleLeaveGroup = async (newAdminId?: string) => {
+    console.log("Tentative de quitter le groupe avec newAdminId:", newAdminId);
     try {
       const res = await fetch(`/api/leaveGroup/${selectedGroupId}`, {
         method: "POST",
@@ -142,6 +143,8 @@ export default function GroupesPage() {
       });
 
       const data = await res.json();
+      console.log("Réponse de l'API après la tentative de quitter:", data);
+
       if (!res.ok) {
         throw new Error(
           data.error || "Erreur lors de la tentative de quitter le groupe."
@@ -212,9 +215,9 @@ export default function GroupesPage() {
         <h2 className="text-2xl font-semibold mb-2">Mes groupes</h2>
         {!loading && groups.length > 0 ? (
           <ul className="space-y-4">
-            {groups.map((group) => (
+            {groups.map((group, index) => (
               <li
-                key={group.group_id}
+                key={group.group_id ? group.group_id : `group-${index}`}
                 className="bg-gray-100 p-4 rounded-lg shadow-md"
               >
                 <h3 className="text-lg font-bold text-black">

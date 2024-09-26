@@ -102,15 +102,14 @@ export default function GroupManagementModal({
         {loading && <p>Chargement...</p>}
         {error && <p className="text-red-500">{error}</p>}
         <ul className="space-y-4">
-          {members.map((member) => (
+          {members.map((member, index) => (
             <li
-              key={member.User.id}
+              key={`${member.User.id}-${index}`} // Combiner l'ID avec l'index pour garantir l'unicité
               className="bg-gray-100 p-4 text-black rounded-lg shadow-md"
             >
               <p className="font-bold text-black">{member.User.name}</p>
               <p>{member.User.email}</p>
               <p className="text-sm text-black">Rôle : {member.role}</p>
-
               <p className="text-xs text-black">
                 Membre depuis :{" "}
                 {new Date(member.createdAt).toLocaleDateString()}

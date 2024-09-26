@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-import { Invitations, GroupMembers, User } from "../../models/associations"; // Associez GroupMembers et Invitations
+import  Invitations from "@/app/models/Invitation";
+import User from "@/app/models/User";
+import GroupMembers from "@/app/models/GroupMember";
+
 import { v4 as uuidv4 } from "uuid";
 import { isUUID } from "validator"; // Ajout d'une bibliothèque pour valider les UUID
+
 
 export async function POST(req: Request) {
   try {
@@ -22,10 +26,8 @@ export async function POST(req: Request) {
     // Vérification si l'userId est un UUID ou un oauth_id
     let user;
     if (isUUID(userId)) {
-      // Chercher l'utilisateur par UUID (id)
       user = await User.findOne({ where: { id: userId } });
     } else {
-      // Chercher l'utilisateur par oauth_id
       user = await User.findOne({ where: { oauth_id: userId } });
     }
 
@@ -33,12 +35,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Utilisateur introuvable." }, { status: 404 });
     }
 
+    // Vérification si l'utilisateur appartient déjà au groupe
+    const existingMember = await GroupMembers.findOne({
+      where: {
+        group_id: invitation.group_id,
+        user_id: user.getDataValue('id'),
+      },
+    });
+
+    if (existingMember) {
+      return NextResponse.json({ message: "L'utilisateur est déjà membre du groupe." });
+    }
+
     // Ajouter l'utilisateur au groupe
     await GroupMembers.create({
       id: uuidv4(),
       group_id: invitation.group_id,
-      user_id: user.getDataValue('id'), // Utiliser l'UUID de l'utilisateur
-      role: "member", // Par défaut, le nouveau membre est un simple utilisateur
+      user_id: user.getDataValue('id'),
+      role: "member",
       joined_at: new Date(),
     });
 

@@ -39,7 +39,6 @@ export default function GroupesPage() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [groupMembers, setGroupMembers] = useState<Member[]>([]);
 
-  // Fonction pour appeler l'API et récupérer les groupes
   const fetchGroups = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -58,8 +57,6 @@ export default function GroupesPage() {
           data.error || "Erreur lors de la récupération des groupes"
         );
       }
-
-      console.log("Groupes récupérés : ", data); // Affiche la réponse de l'API dans la console
 
       setGroups(data.message === "Aucun groupe trouvé" ? [] : data);
     } catch (error) {
@@ -102,7 +99,9 @@ export default function GroupesPage() {
 
   const handlePrepareLeaveGroup = async (groupId: string) => {
     try {
-      const res = await fetch(`/api/groupMembers/group/${groupId}`);
+      const res = await fetch(
+        `/api/groupMembers/group/${groupId}?action=members`
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -117,12 +116,13 @@ export default function GroupesPage() {
       }
 
       setGroupMembers(data);
-      setIsAdmin(
-        data.some(
-          (member: Member) =>
-            member.id === session?.user?.id && member.role === "admin"
-        )
+
+      const isAdminUser = data.some(
+        (member: Member) =>
+          member.id === session?.user?.id && member.role === "admin"
       );
+      setIsAdmin(isAdminUser);
+
       setShowLeaveGroupModal(true);
     } catch (error) {
       setError("Erreur lors de la récupération des membres du groupe.");
@@ -212,44 +212,40 @@ export default function GroupesPage() {
         <h2 className="text-2xl font-semibold mb-2">Mes groupes</h2>
         {!loading && groups.length > 0 ? (
           <ul className="space-y-4">
-            {groups.map((group) => {
-              console.log("Données du groupe : ", group); // Log pour inspecter les données du groupe
-              return (
-                <li
-                  key={group.group_id}
-                  className="bg-gray-100 p-4 rounded-lg shadow-md"
-                >
-                  <h3 className="text-lg font-bold text-black">
-                    {group.group_name}
-                  </h3>
-                  <p className="text-black">
-                    Rôle: {group.role === "admin" ? "Administrateur" : "Membre"}
-                  </p>
-                  <p className="text-sm text-black">
-                    {/* Assure-toi que 'User.name' est correctement accessible ici */}
-                    Créé par : {group.created_by}
-                  </p>
-                  <div className="mt-2 flex space-x-4">
-                    <button
-                      onClick={() => {
-                        setSelectedGroupName(group.group_name);
-                        setSelectedGroupId(group.group_id);
-                        handleManageMembers(group.group_id);
-                      }}
-                      className="bg-blue-500 text-white px-4 py-2 rounded"
-                    >
-                      Gérer les membres
-                    </button>
-                    <button
-                      onClick={() => handlePrepareLeaveGroup(group.group_id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded"
-                    >
-                      Quitter le groupe
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
+            {groups.map((group) => (
+              <li
+                key={group.group_id}
+                className="bg-gray-100 p-4 rounded-lg shadow-md"
+              >
+                <h3 className="text-lg font-bold text-black">
+                  {group.group_name}
+                </h3>
+                <p className="text-black">
+                  Rôle: {group.role === "admin" ? "Administrateur" : "Membre"}
+                </p>
+                <p className="text-sm text-black">
+                  Créé par : {group.created_by}
+                </p>
+                <div className="mt-2 flex space-x-4">
+                  <button
+                    onClick={() => {
+                      setSelectedGroupName(group.group_name);
+                      setSelectedGroupId(group.group_id);
+                      handleManageMembers(group.group_id);
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                  >
+                    Liste et invitation des membres
+                  </button>
+                  <button
+                    onClick={() => handlePrepareLeaveGroup(group.group_id)}
+                    className="bg-red-500 text-white px-4 py-2 rounded"
+                  >
+                    Quitter le groupe
+                  </button>
+                </div>
+              </li>
+            ))}
           </ul>
         ) : (
           !loading && (

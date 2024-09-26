@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { GroupMembers, Group, } from '../../../models/associations'; // Modèle correct
+
+import GroupMembers from '@/app/models/GroupMember';
+import Group from '@/app/models/Group';
 
 // Gestion de la requête POST pour quitter le groupe
 export async function POST(req: Request, { params }: { params: { groupId: string } }) {

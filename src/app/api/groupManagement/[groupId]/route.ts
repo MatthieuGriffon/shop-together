@@ -32,7 +32,7 @@ export async function GET(req: Request, { params }: { params: Params }) {
 
     return NextResponse.json(groupMembers, { status: 200 });
   } catch (error) {
-    console.error('Erreur lors de la récupération des membres du groupe:', error);
+    console.error('Erreur lors de la récupération des membres du groupes:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

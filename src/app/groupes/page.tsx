@@ -27,18 +27,27 @@ export default function GroupesPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+
+  // Etat de la modale de création de groupe
   const [showModal, setShowModal] = useState<boolean>(false);
+
+  // Etat de la modale de gestion de membres
   const [showGroupManagement, setShowGroupManagement] =
     useState<boolean>(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
+  // Etat de la modale de quitter le groupe
   const [showLeaveGroupModal, setShowLeaveGroupModal] =
     useState<boolean>(false);
+
+  // Groupes et membres sélectionnés
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedGroupName, setSelectedGroupName] = useState<string | null>(
     null
   );
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [groupMembers, setGroupMembers] = useState<Member[]>([]);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
+  // Utilisation du callback pour récupérer les groupes
   const fetchGroups = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -97,8 +106,12 @@ export default function GroupesPage() {
     }
   };
 
+  // Réinitialise les états avant d'ouvrir la modale "Quitter le groupe"
   const handlePrepareLeaveGroup = async (groupId: string) => {
     try {
+      setError(""); // Clear error state
+      setGroupMembers([]); // Clear members state before fetching
+
       const res = await fetch(
         `/api/groupMembers/group/${groupId}?action=members`
       );
@@ -123,6 +136,8 @@ export default function GroupesPage() {
       );
       setIsAdmin(isAdminUser);
 
+      // Ouvre la modale "Quitter le groupe" après avoir préparé les données
+      setSelectedGroupId(groupId);
       setShowLeaveGroupModal(true);
     } catch (error) {
       setError("Erreur lors de la récupération des membres du groupe.");
@@ -152,7 +167,7 @@ export default function GroupesPage() {
       }
 
       fetchGroups();
-      setShowLeaveGroupModal(false);
+      setShowLeaveGroupModal(false); // Ferme la modale après le succès
     } catch (error) {
       setError("Erreur lors de la tentative de quitter le groupe.");
       console.error(error);
@@ -173,27 +188,12 @@ export default function GroupesPage() {
       }
 
       setGroupMembers(data);
-      setShowGroupManagement(true);
+      setSelectedGroupId(groupId); // Stocker le groupe sélectionné pour la gestion des membres
+      setShowGroupManagement(true); // Ouvre la modale de gestion des membres
     } catch (error) {
       console.error("Erreur:", error);
     }
   };
-
-  if (status === "loading") {
-    return <p className="text-center text-gray-500">Chargement...</p>;
-  }
-
-  if (status === "unauthenticated") {
-    return (
-      <div className="container mx-auto p-5">
-        <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 max-w-md mx-auto">
-          <p className="text-center text-lg font-semibold text-gray-800">
-            Veuillez vous connecter pour accéder à la gestion des groupes.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-5">

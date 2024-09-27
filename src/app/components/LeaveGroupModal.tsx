@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Member {
   id: string;
@@ -12,32 +12,53 @@ interface LeaveGroupModalProps {
   groupName: string;
   isAdmin: boolean;
   members: Member[];
-  onConfirm: (newAdminId?: string) => void; // Passe un nouvel admin si nécessaire
+  currentUserId: string; // L'ID de l'utilisateur actuel
+  onConfirm: (newAdminId?: string) => void;
   onCancel: () => void;
 }
+
 export default function LeaveGroupModal({
   groupName,
   isAdmin,
   members,
+  currentUserId,
   onConfirm,
   onCancel,
 }: LeaveGroupModalProps) {
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
+
+  // Exclure l'utilisateur actuel de la liste des membres disponibles pour devenir admin
+  const otherMembers = members.filter((member) => {
+    console.log("ID du membre : ", member.id);
+    console.log("ID de l'utilisateur actuel : ", currentUserId);
+    return member.id !== currentUserId;
+  });
+
+  useEffect(() => {
+    // Logs pour vérifier les membres et les autres membres
+    console.log("Membres du groupe : ", members);
+    console.log("Membres autres que l'utilisateur actuel : ", otherMembers);
+    console.log("Est-ce que l'utilisateur est admin : ", isAdmin);
+    console.log(
+      "Nombre de membres disponibles (sans l'utilisateur actuel) : ",
+      otherMembers.length
+    );
+  }, [members, otherMembers, isAdmin]);
 
   const handleSelectAdmin = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAdminId(event.target.value);
   };
 
   const handleConfirm = () => {
-    if (isAdmin && !selectedAdminId) {
-      alert("Please select a new admin before leaving the group.");
+    // Vérifier si un nouvel administrateur doit être désigné
+    if (isAdmin && !selectedAdminId && otherMembers.length > 0) {
+      alert("Veuillez sélectionner un nouveau responsable avant de quitter.");
       return;
     }
-    // Appeler la fonction onConfirm avec le nouvel admin sélectionné
+
+    // Appeler la fonction onConfirm avec le nouvel admin sélectionné (si applicable)
     onConfirm(selectedAdminId || undefined);
   };
-
-  const otherMembers = members.filter((member) => member.role !== "admin");
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
@@ -45,29 +66,40 @@ export default function LeaveGroupModal({
         <h2 className="text-xl text-black font-bold mb-4">
           Quitter le groupe {groupName}
         </h2>
-        <p className="text-black mb-4">
-          {isAdmin
-            ? `Vous êtes administrateur du groupe ${groupName}. Veuillez désigner un nouveau responsable avant de quitter.`
-            : `Êtes-vous sûr de vouloir quitter le groupe ${groupName}?`}
-        </p>
 
-        {isAdmin && otherMembers.length > 0 && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-black mb-2">
-              Sélectionner un nouveau responsable
-            </label>
-            <select
-              onChange={handleSelectAdmin}
-              className="block w-full border rounded-lg p-2 text-black"
-            >
-              <option value="">Choisir un membre</option>
-              {otherMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Si l'utilisateur est seul dans le groupe */}
+        {isAdmin && otherMembers.length === 0 ? (
+          <p className="text-black mb-4">
+            Vous êtes le seul membre du groupe. Si vous quittez, le groupe sera
+            supprimé.
+          </p>
+        ) : (
+          <>
+            <p className="text-black mb-4">
+              Vous êtes administrateur du groupe {groupName}. Veuillez désigner
+              un nouveau responsable avant de quitter.
+            </p>
+
+            {/* Si l'utilisateur est admin et qu'il y a d'autres membres */}
+            {isAdmin && otherMembers.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-black mb-2">
+                  Sélectionner un nouveau responsable
+                </label>
+                <select
+                  onChange={handleSelectAdmin}
+                  className="block w-full border rounded-lg p-2 text-black"
+                >
+                  <option value="">Choisir un membre</option>
+                  {otherMembers.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </>
         )}
 
         <div className="flex justify-end space-x-4">
@@ -81,7 +113,9 @@ export default function LeaveGroupModal({
             onClick={handleConfirm}
             className="bg-red-500 text-white px-4 py-2 rounded"
           >
-            {isAdmin ? "Confirmer et quitter" : "Quitter le groupe"}
+            {isAdmin && otherMembers.length > 0
+              ? "Confirmer et quitter"
+              : "Quitter le groupe"}
           </button>
         </div>
       </div>

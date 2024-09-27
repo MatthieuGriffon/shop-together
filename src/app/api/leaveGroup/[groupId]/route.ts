@@ -3,7 +3,6 @@ import GroupMembers from '@/app/models/GroupMember';
 import Group from '@/app/models/Group';
 import { Op } from 'sequelize';
 
-// Gestion de la requête POST pour quitter le groupe
 export async function POST(req: Request, { params }: { params: { groupId: string } }) {
   const { groupId } = params;
   let userId;
@@ -17,7 +16,7 @@ export async function POST(req: Request, { params }: { params: { groupId: string
       return NextResponse.json({ error: 'ID de groupe ou utilisateur manquant' }, { status: 400 });
     }
 
-    // Vérifier si l'utilisateur est administrateur
+    // Vérifier si l'utilisateur est membre du groupe
     const userMembership = await GroupMembers.findOne({
       where: {
         group_id: groupId,
@@ -32,16 +31,16 @@ export async function POST(req: Request, { params }: { params: { groupId: string
     const isAdmin = userMembership.role === 'admin';
 
     if (isAdmin) {
-      // Si l'utilisateur est admin, lister les autres membres du groupe
+      // Récupérer les autres membres du groupe (exclure l'utilisateur actuel)
       const otherMembers = await GroupMembers.findAll({
         where: {
           group_id: groupId,
-          user_id: { [Op.ne]: userId }, // Exclure l'utilisateur actuel
+          user_id: { [Op.ne]: userId },
         },
       });
 
       if (otherMembers.length === 0) {
-        // Si aucun autre membre, supprimer le groupe
+        // Si aucun autre membre, supprimer tous les membres du groupe puis le groupe
         await GroupMembers.destroy({
           where: { group_id: groupId },
         });
@@ -53,16 +52,16 @@ export async function POST(req: Request, { params }: { params: { groupId: string
         return NextResponse.json({ message: 'Le groupe a été supprimé car vous étiez le dernier membre.' }, { status: 200 });
       }
 
-      // Si un nouvel administrateur est défini
+      // Si un nouvel admin est défini
       if (newAdminId) {
-        // Mettre à jour le rôle de l'utilisateur sélectionné en tant qu'administrateur
+        // Assigner le rôle d'admin au nouveau membre
         await GroupMembers.update(
           { role: 'admin' },
           { where: { user_id: newAdminId, group_id: groupId } }
         );
       }
 
-      // Supprimer l'utilisateur actuel du groupe après le transfert du rôle d'admin
+      // Supprimer l'utilisateur actuel du groupe après transfert
       await GroupMembers.destroy({
         where: {
           group_id: groupId,
@@ -75,7 +74,7 @@ export async function POST(req: Request, { params }: { params: { groupId: string
       }, { status: 200 });
     }
 
-    // Si l'utilisateur n'est pas admin, quitter le groupe normalement
+    // Si l'utilisateur n'est pas admin, quitter normalement
     const result = await GroupMembers.destroy({
       where: {
         group_id: groupId,

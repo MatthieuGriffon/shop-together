@@ -275,6 +275,7 @@ export default function GroupesPage() {
           groupName={selectedGroupName || ""}
           isAdmin={isAdmin}
           members={groupMembers}
+          currentUserId={session?.user?.id || ""}
           onConfirm={handleLeaveGroup}
           onCancel={() => setShowLeaveGroupModal(false)}
         />

@@ -42,7 +42,6 @@ const ProfilPage = () => {
     });
 
     if (response.ok) {
-      console.log("Image uploaded successfully");
       // Re-fetch user data after uploading the image
     } else {
       console.error("Failed to upload image");

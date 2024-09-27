@@ -1,7 +1,5 @@
-// models/ListItem.ts
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../../lib/sequelize";
-import ShoppingList from "./ShoppingList";
 import User from "./User";
 import Category from "./Category";
 
@@ -21,10 +19,7 @@ const ListItem = sequelize.define("ListItem", {
   },
   list_id: {
     type: DataTypes.UUID,
-    references: {
-      model: ShoppingList,
-      key: "id",
-    },
+    allowNull: false,
   },
   category_id: {
     type: DataTypes.UUID,
@@ -53,5 +48,9 @@ const ListItem = sequelize.define("ListItem", {
     defaultValue: DataTypes.NOW,
   },
 });
+
+// Associations
+ListItem.belongsTo(User, { foreignKey: "added_by", as: "addedBy" });
+ListItem.belongsTo(Category, { foreignKey: "category_id", as: "category" });
 
 export default ListItem;

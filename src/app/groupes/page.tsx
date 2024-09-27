@@ -146,7 +146,6 @@ export default function GroupesPage() {
   };
 
   const handleLeaveGroup = async (newAdminId?: string) => {
-    console.log("Tentative de quitter le groupe avec newAdminId:", newAdminId);
     try {
       const res = await fetch(`/api/leaveGroup/${selectedGroupId}`, {
         method: "POST",
@@ -158,7 +157,6 @@ export default function GroupesPage() {
       });
 
       const data = await res.json();
-      console.log("Réponse de l'API après la tentative de quitter:", data);
 
       if (!res.ok) {
         throw new Error(

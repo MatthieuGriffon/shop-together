@@ -1,5 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../../lib/sequelize";
+import ListItem from "./ListItem";
+import User from "./User";
 
 const ShoppingList = sequelize.define("ShoppingList", {
   id: {
@@ -28,5 +30,9 @@ const ShoppingList = sequelize.define("ShoppingList", {
     defaultValue: DataTypes.NOW,
   },
 });
+
+// Associations
+ShoppingList.belongsTo(User, { as: 'creator', foreignKey: 'created_by' });
+ShoppingList.hasMany(ListItem, { foreignKey: "list_id", as: "items" });
 
 export default ShoppingList;

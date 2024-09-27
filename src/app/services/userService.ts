@@ -3,7 +3,6 @@ import User from '../models/User';  // Import du modèle Sequelize
 // Fonction pour récupérer un utilisateur par son ID (UUID ou OAuth ID)
 export const getUserById = async (id: string) => {
     try {
-      console.log(`Recherche de l'utilisateur avec l'ID : ${id}`);
   
       let user;
   

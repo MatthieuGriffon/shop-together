@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface Member {
   id: string;
@@ -29,21 +29,8 @@ export default function LeaveGroupModal({
 
   // Exclure l'utilisateur actuel de la liste des membres disponibles pour devenir admin
   const otherMembers = members.filter((member) => {
-    console.log("ID du membre : ", member.id);
-    console.log("ID de l'utilisateur actuel : ", currentUserId);
     return member.id !== currentUserId;
   });
-
-  useEffect(() => {
-    // Logs pour vérifier les membres et les autres membres
-    console.log("Membres du groupe : ", members);
-    console.log("Membres autres que l'utilisateur actuel : ", otherMembers);
-    console.log("Est-ce que l'utilisateur est admin : ", isAdmin);
-    console.log(
-      "Nombre de membres disponibles (sans l'utilisateur actuel) : ",
-      otherMembers.length
-    );
-  }, [members, otherMembers, isAdmin]);
 
   const handleSelectAdmin = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedAdminId(event.target.value);

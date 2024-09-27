@@ -24,9 +24,6 @@ export async function GET(req: Request, { params }: { params: { groupId: string 
         get: (key: 'user_id' | 'role' | 'joined_at') => string | number;
         User?: { get: (key: 'name' | 'email') => string };
       }>;
-
-      console.log(groupMembers);
-
       if (!groupMembers.length) {
         return NextResponse.json({ message: 'Aucun membre trouvé' }, { status: 200 });
       }
@@ -39,8 +36,6 @@ export async function GET(req: Request, { params }: { params: { groupId: string 
         role: member.get('role'),
         joined_at: member.get('joined_at'), // Ajouter la date de jointure
       }));
-      console.log('Members du group/[groupId]/route.ts',members);
-
       return NextResponse.json(members, { status: 200 });
     }
 

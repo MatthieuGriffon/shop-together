@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { getUserById } from '../../../services/userService';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  console.log(`ID reçu dans la route : ${params.id}`);
-
   try {
     const user = await getUserById(params.id);  // Utilise la fonction qui gère UUID et OAuth ID
     if (!user) {

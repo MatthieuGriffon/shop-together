@@ -28,8 +28,6 @@ const FacebookLoginStatus = () => {
   }, []);
 
   function statusChangeCallback(response: FacebookLoginStatusResponse) {
-    console.log("Facebook Login Status:", response);
-
     if (response.status === "connected") {
       console.log("Connected to Facebook:", response.authResponse);
     } else {

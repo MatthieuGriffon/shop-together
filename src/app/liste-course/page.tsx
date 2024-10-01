@@ -33,6 +33,7 @@ export default function ListeCoursesPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null); // Stocker l'ID du groupe sélectionné pour la modale
 
   // Utilisation du callback pour récupérer les groupes
   const fetchGroups = useCallback(async () => {
@@ -84,6 +85,10 @@ export default function ListeCoursesPage() {
   // Fonction pour gérer la soumission de la modal
   const handleCreateList = async (name: string) => {
     try {
+      if (!selectedGroupId) {
+        throw new Error("Groupe non sélectionné.");
+      }
+
       const res = await fetch(`/api/shoppingLists`, {
         method: "POST",
         headers: {
@@ -91,7 +96,7 @@ export default function ListeCoursesPage() {
         },
         body: JSON.stringify({
           name,
-          groupId: groups[0].group_id, // Par exemple, on utilise le premier groupe ici
+          groupId: selectedGroupId, // Utiliser l'ID du groupe sélectionné
           createdBy: session?.user?.id,
         }),
       });
@@ -104,6 +109,7 @@ export default function ListeCoursesPage() {
       }
 
       fetchGroups(); // Rafraîchir les groupes après la création
+      setIsModalOpen(false); // Fermer la modal après la création
     } catch (error) {
       setError((error as Error).message);
     }
@@ -137,54 +143,71 @@ export default function ListeCoursesPage() {
 
               {/* Afficher les listes de courses */}
               {group.lists && group.lists.length > 0 ? (
-                group.lists.map((list) => (
-                  <div
-                    key={list.id}
-                    className="bg-gray-100 p-3 rounded-lg shadow-sm"
-                  >
-                    <h3 className="text-md font-medium mb-2">{list.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      Créé par : {list.creator?.name || "Inconnu"}
-                    </p>
+                <>
+                  {group.lists.map((list) => (
+                    <div
+                      key={list.id}
+                      className="bg-gray-100 p-3 rounded-lg shadow-sm"
+                    >
+                      <h3 className="text-md font-medium mb-2">{list.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        Créé par : {list.creator?.name || "Inconnu"}
+                      </p>
 
-                    {/* Afficher les articles de la liste */}
-                    <ul className="space-y-2 mt-2">
-                      {list.items && list.items.length > 0 ? (
-                        list.items.map((item) => (
-                          <li
-                            key={item.id}
-                            className="flex justify-between items-center p-2 bg-white rounded-lg"
-                          >
-                            <div>
-                              <p className="text-md font-medium">{item.name}</p>
-                              <p className="text-sm text-gray-600">
-                                Quantité : {item.quantity}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                Catégorie : {item.category}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                Ajouté par : {item.addedBy?.name || "Inconnu"}
-                              </p>
-                            </div>
-                            <input
-                              type="checkbox"
-                              className="form-checkbox h-5 w-5 text-green-500"
-                            />
-                          </li>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">
-                          Aucun article trouvé.
-                        </p>
-                      )}
-                    </ul>
-                  </div>
-                ))
+                      {/* Afficher les articles de la liste */}
+                      <ul className="space-y-2 mt-2">
+                        {list.items && list.items.length > 0 ? (
+                          list.items.map((item) => (
+                            <li
+                              key={item.id}
+                              className="flex justify-between items-center p-2 bg-white rounded-lg"
+                            >
+                              <div>
+                                <p className="text-md font-medium">
+                                  {item.name}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Quantité : {item.quantity}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Catégorie : {item.category}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Ajouté par : {item.addedBy?.name || "Inconnu"}
+                                </p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                className="form-checkbox h-5 w-5 text-green-500"
+                              />
+                            </li>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            Aucun article trouvé.
+                          </p>
+                        )}
+                      </ul>
+                    </div>
+                  ))}
+                  {/* Ajouter ici le bouton pour créer une nouvelle liste, même s'il y a déjà des listes */}
+                  <button
+                    className="bg-green-500 text-white w-full py-2 rounded-lg mt-4"
+                    onClick={() => {
+                      setSelectedGroupId(group.group_id);
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    Créer une nouvelle liste de courses
+                  </button>
+                </>
               ) : (
                 <button
                   className="bg-green-500 text-white w-full py-2 rounded-lg"
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => {
+                    setSelectedGroupId(group.group_id);
+                    setIsModalOpen(true);
+                  }}
                 >
                   Créer une nouvelle liste de courses
                 </button>

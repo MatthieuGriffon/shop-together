@@ -59,7 +59,7 @@ export default function ListeCoursesPage() {
       }
 
       const groupsWithLists = await Promise.all(
-        data.map(async (group: Group) => {
+        (Array.isArray(data) ? data : []).map(async (group: Group) => {
           const listRes = await fetch(`/api/shoppingLists/${group.group_id}`);
           const listData = await listRes.json();
 
@@ -247,7 +247,7 @@ export default function ListeCoursesPage() {
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-600">Aucun groupe trouvé.</p>
+          <p className="text-center text-red-600">Aucun groupe trouvé.</p>
         )}
       </div>
 

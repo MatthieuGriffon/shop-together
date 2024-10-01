@@ -93,15 +93,18 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }: { session: Session; token: JWT }) {
+      console.log("Token JWT:", token); // Ajoute cette ligne
+      console.log("Session avant assignation:", session); // Ajoute cette ligne
+      
       session.user.id = token.id as string;
       session.user.email = token.email as string;
       session.user.name = token.name as string;
       session.user.profile_picture_url = token.profile_picture_url as string | undefined;
-      
-      // Utilisation du provider stocké dans le token JWT
       session.user.provider = typeof token.provider === 'string' ? token.provider : "credentials";
-
+    
+      console.log("Session après assignation:", session); // Ajoute cette ligne
+    
       return session;
-    },
+    }
   },
 };

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import ShoppingList from "@/app/models/ShoppingList";
+import ListItem from "@/app/models/ListItem"; // Modèle pour les articles
 import User from "@/app/models/User"; // Modèle pour les utilisateurs
 import Group from "@/app/models/Group";
 
@@ -24,6 +25,17 @@ export async function GET(req: Request, { params }: { params: { groupId: string 
           model: User,
           as: 'creator', // Alias défini dans ShoppingList
           attributes: ['name'], // Afficher seulement le nom de l'utilisateur qui a créé la liste
+        },
+        {
+          model: ListItem, // Inclure les articles dans la liste de courses
+          as: 'items', // Alias défini dans ShoppingList
+          include: [
+            {
+              model: User, // Inclure l'utilisateur qui a ajouté l'article
+              as: 'addedBy', // Alias défini dans ListItem
+              attributes: ['name'], // Afficher seulement le nom de l'utilisateur
+            },
+          ],
         },
       ],
     });

@@ -34,10 +34,16 @@ export default function ListeCoursesPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // État pour la modal de suppression
-  const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null); // Liste sélectionnée pour suppression
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null);
+
+  // Ajoutez un état pour chaque liste d'articles
+  const [itemInputs, setItemInputs] = useState<{
+    [listId: string]: { name: string; quantity: number };
+  }>({});
 
   const fetchGroups = useCallback(async () => {
     setLoading(true);
@@ -132,10 +138,53 @@ export default function ListeCoursesPage() {
       }
 
       fetchGroups();
-      setIsDeleteModalOpen(false); // Fermer la modal après suppression
+      setIsDeleteModalOpen(false);
     } catch (error) {
       setError((error as Error).message);
     }
+  };
+
+  const handleAddItem = async (listId: string) => {
+    const newItemName = itemInputs[listId]?.name || "";
+    const newItemQuantity = itemInputs[listId]?.quantity || 1;
+    console.log("Quantité avant envoi :", newItemQuantity);
+
+    try {
+      const res = await fetch("/api/listItems", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          list_id: listId,
+          name: newItemName,
+          quantity: newItemQuantity, // Log la quantité
+          category_id: null,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("Réponse du serveur :", data);
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur lors de l'ajout de l'article");
+      }
+
+      fetchGroups();
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'article :", error);
+    }
+  };
+
+  const handleInputChange = (
+    listId: string,
+    field: "name" | "quantity",
+    value: string | number
+  ) => {
+    setItemInputs((prevInputs) => ({
+      ...prevInputs,
+      [listId]: { ...prevInputs[listId], [field]: value },
+    }));
   };
 
   if (loading) {
@@ -171,7 +220,6 @@ export default function ListeCoursesPage() {
                       key={list.id}
                       className="bg-slate-600 p-3 rounded-lg shadow-sm m-1 relative"
                     >
-                      {" "}
                       <button
                         onClick={() => {
                           setListToDelete(list);
@@ -221,6 +269,40 @@ export default function ListeCoursesPage() {
                           </p>
                         )}
                       </ul>
+
+                      {/* Formulaire pour ajouter des articles */}
+                      <div className="mt-4">
+                        <input
+                          type="text"
+                          placeholder="Nom de l'article"
+                          value={itemInputs[list.id]?.name || ""}
+                          onChange={(e) =>
+                            handleInputChange(list.id, "name", e.target.value)
+                          }
+                          className="p-2 border rounded w-full mb-2"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Quantité"
+                          value={itemInputs[list.id]?.quantity || 1}
+                          onChange={
+                            (e) =>
+                              handleInputChange(
+                                list.id,
+                                "quantity",
+                                Number(e.target.value)
+                              ) // S'assurer que la quantité est bien un nombre
+                          }
+                          className="p-2 border rounded w-full mb-2"
+                        />
+
+                        <button
+                          className="bg-blue-500 text-white p-2 rounded w-full"
+                          onClick={() => handleAddItem(list.id)}
+                        >
+                          Ajouter un article
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <button

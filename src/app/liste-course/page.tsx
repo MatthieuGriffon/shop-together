@@ -275,166 +275,149 @@ export default function ListeCoursesPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">
+    <div className="max-w-md mx-auto p-6 bg-gray-50 rounded-lg shadow-lg space-y-6">
+      <h1 className="text-3xl font-bold mb-4 text-center text-gray-800">
         Votre liste de courses partagée
       </h1>
-      <p className="mb-4 text-center">
+      <p className="mb-4 text-center text-gray-700">
         Gérez vos articles en temps réel avec vos groupes.
       </p>
 
-      <div className="space-y-6 text-black">
-        {groups.length > 0 ? (
-          groups.map((group) => (
-            <div
-              key={group.group_id}
-              className="bg-white shadow-lg rounded-lg p-4"
-            >
-              <h2 className="text-lg font-semibold mb-2">{group.group_name}</h2>
+      {groups.length > 0 ? (
+        groups.map((group) => (
+          <div
+            key={group.group_id}
+            className="bg-white shadow-md rounded-lg p-4 space-y-4"
+          >
+            <h2 className="text-lg font-semibold mb-2 text-gray-700">
+              {group.group_name}
+            </h2>
 
-              {group.lists && group.lists.length > 0 ? (
-                <>
-                  {group.lists.map((list) => (
-                    <div
-                      key={list.id}
-                      className="bg-slate-600 p-3 rounded-lg shadow-sm m-1 relative"
-                    >
-                      <button
-                        onClick={() => {
-                          setListToDelete(list);
-                          setIsDeleteModalOpen(true);
-                        }}
-                        className="relative left-[96%] font-extrabold text-red-500 hover:text-red-700"
-                        title="Supprimer la liste"
-                      >
-                        <X size={20} strokeWidth={6} />
-                      </button>
-                      <h3 className="text-md mb-2 text-white font-bold">
-                        {list.name}
-                      </h3>
-                      <p className="text-sm text-white">
-                        Créé par : {list.creator?.name || "Inconnu"}
-                      </p>
-                      <ul className="space-y-2 mt-2">
-                        {list.items && list.items.length > 0 ? (
-                          list.items.map((item) => (
-                            <li
-                              key={item.id}
-                              className="flex justify-between items-center p-2 bg-white rounded-lg"
-                            >
-                              <div>
-                                <p className="text-md font-medium">
-                                  {item.name}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Quantité : {item.quantity}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  Catégorie : {item.category}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  Ajouté par : {item.addedBy?.name || "Inconnu"}
-                                </p>
-                              </div>
-                              <div className="flex space-x-2">
-                                <input
-                                  type="number"
-                                  value={
-                                    itemQuantities[item.id] || item.quantity
-                                  }
-                                  onChange={(e) => {
-                                    const newValue = Number(e.target.value);
-                                    if (!isNaN(newValue)) {
-                                      handleQuantityChange(item.id, newValue);
-                                    }
-                                  }}
-                                  className="w-12 p-1 text-center"
-                                />
-                                <button
-                                  onClick={() => handleUpdateQuantity(item.id)}
-                                  className="bg-blue-500 text-white px-2 py-1 rounded"
-                                >
-                                  Modifier
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  className="text-red-500 hover:text-red-700"
-                                  title="Supprimer l'article"
-                                >
-                                  <X size={20} strokeWidth={6} />
-                                </button>
-                              </div>
-                            </li>
-                          ))
-                        ) : (
-                          <p className="text-sm text-red-200 font-bold">
-                            Aucun article trouvé.
-                          </p>
-                        )}
-                      </ul>
-
-                      {/* Formulaire pour ajouter des articles */}
-                      <div className="mt-4">
-                        <input
-                          type="text"
-                          placeholder="Nom de l'article"
-                          value={itemInputs[list.id]?.name || ""}
-                          onChange={(e) =>
-                            handleInputChange(list.id, "name", e.target.value)
-                          }
-                          className="p-2 border rounded w-full mb-2"
-                        />
-                        <input
-                          type="number"
-                          placeholder="Quantité"
-                          value={itemInputs[list.id]?.quantity || 1}
-                          onChange={
-                            (e) =>
-                              handleInputChange(
-                                list.id,
-                                "quantity",
-                                Number(e.target.value)
-                              ) // S'assurer que la quantité est bien un nombre
-                          }
-                          className="p-2 border rounded w-full mb-2"
-                        />
-
-                        <button
-                          className="bg-blue-500 text-white p-2 rounded w-full"
-                          onClick={() => handleAddItem(list.id)}
-                        >
-                          Ajouter un article
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    className="bg-green-500 text-white w-full py-2 rounded-lg mt-4"
-                    onClick={() => {
-                      setSelectedGroupId(group.group_id);
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    Créer une nouvelle liste de courses
-                  </button>
-                </>
-              ) : (
-                <button
-                  className="bg-green-500 text-white w-full py-2 rounded-lg"
-                  onClick={() => {
-                    setSelectedGroupId(group.group_id);
-                    setIsModalOpen(true);
-                  }}
+            {group.lists && group.lists.length > 0 ? (
+              group.lists.map((list) => (
+                <div
+                  key={list.id}
+                  className="bg-gray-100 p-4 rounded-lg shadow-sm"
+                  style={{ maxHeight: "250px", overflowY: "auto" }} // Limite la hauteur et active le scroll
                 >
-                  Créer une nouvelle liste de courses
-                </button>
-              )}
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-red-600">Aucun groupe trouvé.</p>
-        )}
-      </div>
+                  <button
+                    onClick={() => {
+                      setListToDelete(list);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="relative top-0 right-0 text-red-500 hover:text-red-700 float-right"
+                  >
+                    <X size={20} />
+                  </button>
+                  <h3 className="text-md mb-2 font-bold text-gray-800">
+                    {list.name}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Créé par : {list.creator?.name || "Inconnu"}
+                  </p>
+
+                  <ul className="mt-2 space-y-3">
+                    {list.items && list.items.length > 0 ? (
+                      list.items.map((item) => (
+                        <li
+                          key={item.id}
+                          className="flex justify-between items-center bg-white p-2 rounded-lg shadow-sm"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {item.name}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Quantité : {item.quantity}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Ajouté par : {item.addedBy?.name || "Inconnu"}
+                            </p>
+                          </div>
+                          <div className="flex space-x-2 text-black">
+                            <input
+                              type="number"
+                              value={itemQuantities[item.id] || item.quantity}
+                              onChange={(e) =>
+                                handleQuantityChange(
+                                  item.id,
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-12 p-1 border border-gray-300 rounded text-center"
+                            />
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id)}
+                              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                            >
+                              Modifier
+                            </button>
+                            <button
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="text-red-500 hover:text-red-700"
+                              title="Supprimer l'article"
+                            >
+                              <X size={20} />
+                            </button>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        Aucun article trouvé.
+                      </p>
+                    )}
+                  </ul>
+
+                  <div className="mt-4 text-black">
+                    <input
+                      type="text"
+                      placeholder="Nom de l'article"
+                      value={itemInputs[list.id]?.name || ""}
+                      onChange={(e) =>
+                        handleInputChange(list.id, "name", e.target.value)
+                      }
+                      className="p-2 border rounded w-full mb-2"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Quantité"
+                      value={itemInputs[list.id]?.quantity || 1}
+                      onChange={(e) =>
+                        handleInputChange(
+                          list.id,
+                          "quantity",
+                          Number(e.target.value)
+                        )
+                      }
+                      className="p-2 border rounded w-full mb-2 text-black"
+                    />
+                    <button
+                      onClick={() => handleAddItem(list.id)}
+                      className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600"
+                    >
+                      Ajouter un article
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">Aucune liste trouvée.</p>
+            )}
+            <button
+              onClick={() => {
+                setSelectedGroupId(group.group_id);
+                setIsModalOpen(true);
+              }}
+              className="bg-green-500 text-white w-full py-2 rounded hover:bg-green-600"
+            >
+              Créer une nouvelle liste de courses
+            </button>
+          </div>
+        ))
+      ) : (
+        <p className="text-center text-gray-600">Aucun groupe trouvé.</p>
+      )}
 
       <CreateNewListModal
         isOpen={isModalOpen}

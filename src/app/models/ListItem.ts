@@ -3,6 +3,7 @@ import { sequelize } from "../../../lib/sequelize";
 import User from "./User";
 import Category from "./Category";
 
+
 const ListItem = sequelize.define("ListItem", {
   id: {
     type: DataTypes.UUID,
@@ -50,7 +51,9 @@ const ListItem = sequelize.define("ListItem", {
 });
 
 // Associations
+
 ListItem.belongsTo(User, { foreignKey: "added_by", as: "addedBy" });
 ListItem.belongsTo(Category, { foreignKey: "category_id", as: "category" });
+
 
 export default ListItem;

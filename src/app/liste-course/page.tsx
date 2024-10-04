@@ -175,6 +175,28 @@ export default function ListeCoursesPage() {
       console.error("Erreur lors de l'ajout de l'article :", error);
     }
   };
+  const handleDeleteItem = async (itemId: string) => {
+    console.log("ID de l'article à supprimer :", itemId); // Vérification de l'ID
+
+    try {
+      const res = await fetch(`/api/listItems/${itemId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(
+          data.error || "Erreur lors de la suppression de l'article."
+        );
+      }
+
+      // Actualiser les données après suppression
+      fetchGroups(); // Rafraîchir les groupes et les articles
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'article :", error);
+      setError((error as Error).message);
+    }
+  };
 
   const handleInputChange = (
     listId: string,
@@ -257,10 +279,21 @@ export default function ListeCoursesPage() {
                                   Ajouté par : {item.addedBy?.name || "Inconnu"}
                                 </p>
                               </div>
-                              <input
-                                type="checkbox"
-                                className="form-checkbox h-5 w-5 text-green-500"
-                              />
+                              <div className="flex space-x-2">
+                                {/* Checkbox existante */}
+                                <input
+                                  type="checkbox"
+                                  className="form-checkbox h-5 w-5 text-green-500"
+                                />
+                                {/* Bouton de suppression dans la liste des articles */}
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)} // Utilisation correcte de l'ID
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Supprimer l'article"
+                                >
+                                  <X size={20} strokeWidth={6} />
+                                </button>
+                              </div>
                             </li>
                           ))
                         ) : (

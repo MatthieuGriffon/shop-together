@@ -25,6 +25,7 @@ export async function POST(req: Request) {
       quantity,
       category_id,
     });
+
     // Vérification de l'existence de la liste
     const shoppingList = await ShoppingList.findOne({
       where: { id: list_id },
@@ -43,9 +44,11 @@ export async function POST(req: Request) {
       name,
       quantity,
       category_id,
-      added_by: session.user.id, // Utilisation de l'ID utilisateur
+      added_by: session.user.id,
+      checked: false,
+      created_at: new Date(),
+      updated_at: new Date(),
     });
-
     return NextResponse.json(newItem, { status: 201 });
   } catch (error) {
     console.error("Erreur lors de l'ajout de l'article:", error);

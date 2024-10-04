@@ -39,6 +39,9 @@ export default function ListeCoursesPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [listToDelete, setListToDelete] = useState<ShoppingList | null>(null);
+  const [itemQuantities, setItemQuantities] = useState<{
+    [itemId: string]: number;
+  }>({});
 
   // Ajoutez un état pour chaque liste d'articles
   const [itemInputs, setItemInputs] = useState<{
@@ -86,8 +89,21 @@ export default function ListeCoursesPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchGroups();
+      fetchGroups().then(() => {
+        // Initialisation des quantités d'articles dans l'état itemQuantities
+        groups.forEach((group) => {
+          group.lists?.forEach((list) => {
+            list.items.forEach((item) => {
+              setItemQuantities((prevQuantities) => ({
+                ...prevQuantities,
+                [item.id]: item.quantity, // Initialisation avec la quantité actuelle de l'article
+              }));
+            });
+          });
+        });
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, fetchGroups]);
 
   const handleCreateList = async (name: string) => {
@@ -175,6 +191,7 @@ export default function ListeCoursesPage() {
       console.error("Erreur lors de l'ajout de l'article :", error);
     }
   };
+
   const handleDeleteItem = async (itemId: string) => {
     console.log("ID de l'article à supprimer :", itemId); // Vérification de l'ID
 
@@ -207,6 +224,46 @@ export default function ListeCoursesPage() {
       ...prevInputs,
       [listId]: { ...prevInputs[listId], [field]: value },
     }));
+  };
+
+  const handleQuantityChange = (itemId: string, value: number) => {
+    setItemQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [itemId]: Number(value),
+    }));
+  };
+
+  const handleUpdateQuantity = async (itemId: string) => {
+    const newQuantity = itemQuantities[itemId];
+    const itemName = itemInputs[itemId]?.name; // Capturez également le nom si nécessaire
+    const checked = false; // Ajoutez des valeurs pour les autres champs si nécessaire
+
+    try {
+      const res = await fetch(`/api/listItems/${itemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: itemName, // Assurez-vous que toutes les valeurs sont envoyées
+          quantity: newQuantity,
+          checked: checked,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(
+          data.error || "Erreur lors de la mise à jour de l'article."
+        );
+      }
+
+      // Rafraîchir les groupes et les articles après la mise à jour
+      fetchGroups();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la quantité :", error);
+      setError((error as Error).message);
+    }
   };
 
   if (loading) {
@@ -280,14 +337,27 @@ export default function ListeCoursesPage() {
                                 </p>
                               </div>
                               <div className="flex space-x-2">
-                                {/* Checkbox existante */}
                                 <input
-                                  type="checkbox"
-                                  className="form-checkbox h-5 w-5 text-green-500"
+                                  type="number"
+                                  value={
+                                    itemQuantities[item.id] || item.quantity
+                                  }
+                                  onChange={(e) => {
+                                    const newValue = Number(e.target.value);
+                                    if (!isNaN(newValue)) {
+                                      handleQuantityChange(item.id, newValue);
+                                    }
+                                  }}
+                                  className="w-12 p-1 text-center"
                                 />
-                                {/* Bouton de suppression dans la liste des articles */}
                                 <button
-                                  onClick={() => handleDeleteItem(item.id)} // Utilisation correcte de l'ID
+                                  onClick={() => handleUpdateQuantity(item.id)}
+                                  className="bg-blue-500 text-white px-2 py-1 rounded"
+                                >
+                                  Modifier
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)}
                                   className="text-red-500 hover:text-red-700"
                                   title="Supprimer l'article"
                                 >
